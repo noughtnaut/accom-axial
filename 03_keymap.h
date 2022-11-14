@@ -7,7 +7,7 @@
 class Key {
 private:
   int usbKeyCode = 0;  // @see https://www.pjrc.com/teensy/td_keyboard.html
-  String value = String("☹");
+  String label = String("☹");
   bool pressed = false;
   bool changedSinceLastQuery = false;
 
@@ -20,19 +20,19 @@ public:
 
   Key(String str) {
     usbKeyCode = -1;  // Not a standard USB key
-    value = str;
+    label = str;
   }
 
   const int getUsbKeyCode() {
     return usbKeyCode;
   }
 
-  const bool isUsbKeyCode() {
+  const bool isStandardUsbKey() {
     return -1 != usbKeyCode;
   }
 
-  const char* getValue() {
-    return value.c_str();
+  const char* getLabel() {
+    return label.c_str();
   }
 
   bool isPressed() {

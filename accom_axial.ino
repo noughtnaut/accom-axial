@@ -16,7 +16,7 @@ void startSerial() {
 }
 
 void loop() {
-  scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to ranomly just stop?
+  scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to randomly just stop?
 }
 
 void setup() {

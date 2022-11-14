@@ -39,7 +39,7 @@ Pin pinG2APins[] = { pinG2Afnc, pinG2Ak2j, pinG2Akbd };
 Pin pinRetPins[] = { pinRet1, pinRet2, pinRet3, pinRet4, pinRet5, pinRet6, pinRet7, pinRet8 };
 
 void scanKeyboard() {
-  pinLedJog.setActive(true); // Keep this LED on while scanning
+  pinLedJog.setActive(true); // Debug: Keep this LED on while scanning
   // iterate over DMX G2A
   // Only one of these should be LOW at any given time
   for (int g = 0; g <= 2; g++) {
@@ -60,31 +60,37 @@ void scanKeyboard() {
         Key& key = keymap.get(g, sA, sB, sC, r);
         key.setPressed(pinRetPins[r].isActive());
         if (key.changed()) {
-          if (key.isUsbKeyCode()) {
-            Serial.printf("%i was %s\n", key.getUsbKeyCode(), key.isPressed() ? "pressed" : "released");
-          // Send key events to USB host instead of simply reporting press/release events
+          if (key.isStandardUsbKey()) {
+            // Send key events to USB host instead of simply reporting press/release events
             if (key.isPressed()) {
-          // FIXME error: 'Keyboard' was not declared in this scope
               Keyboard.press(key.getUsbKeyCode());
+              Serial.printf("%i was pressed\n", key.getUsbKeyCode());
             } else { // released
               Keyboard.release(key.getUsbKeyCode());
+              Serial.printf("%i was released\n", key.getUsbKeyCode());
             }
-          } else {
+          } else { // nonstandard key
             // Report press/release events for nonstandard keys
-            Serial.printf("%s was %s\n", key.getValue(), key.isPressed() ? "pressed" : "released");
+            Serial.printf("%s was %s\n", key.getLabel(), key.isPressed() ? "pressed" : "released");
+            if (key.isPressed()) {
+              Keyboard.printf("%s", key.getLabel());
+              // FIXME (if possible??) "ABSLT" prints "AXONY" because console sends in DK layout
+            } else { // released
+              // No output when releasing nonstandard key
+            }
           }
         }
       }
     }
     pinG2A.setActive(false);
   }
-  pinLedJog.setActive(false); // Turn this LED aff after scanning
+  pinLedJog.setActive(false); // Debug: Turn this LED aff after scanning
 }
 
 int setupKeyboard() {
   Serial.print("keyboard:");
   keymap = Keymap();
-  //threads.addThread(scanKeyboard);
+  //threads.addThread(scanKeyboard); // FIXME Why does this seem to randomly just stop?
   Serial.println("ok");
   return 0;
 }
