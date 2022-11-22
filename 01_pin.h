@@ -19,7 +19,9 @@ public:
     initState = initStateThis;
 
     pinMode(number, mode);
-    setState(initState);
+    if (mode == OUTPUT) {
+      setState(initState);
+    }
   }
 
   void setState(int newState) {
