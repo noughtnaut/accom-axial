@@ -26,14 +26,14 @@ Pin pinSelA(53, OUTPUT, HIGH, LOW);  // DMX Select A (r23)
 Pin pinSelB(52, OUTPUT, HIGH, LOW);  // DMX Select B (r25)
 Pin pinSelC(51, OUTPUT, HIGH, LOW);  // DMX Select C (r27)
 
-Pin pinRet1(33, INPUT_PULLUP, LOW, HIGH);  // Return 1 (r1)
-Pin pinRet2(34, INPUT_PULLUP, LOW, HIGH);  // Return 2 (r3)
-Pin pinRet3(35, INPUT_PULLUP, LOW, HIGH);  // Return 3 (r5)
-Pin pinRet4(36, INPUT_PULLUP, LOW, HIGH);  // Return 4 (r7)
-Pin pinRet5(37, INPUT_PULLUP, LOW, HIGH);  // Return 5 (r9)
-Pin pinRet6(38, INPUT_PULLUP, LOW, HIGH);  // Return 6 (r11)
-Pin pinRet7(39, INPUT_PULLUP, LOW, HIGH);  // Return 7 (r13)
-Pin pinRet8(27, INPUT_PULLUP, LOW, HIGH);  // Return 8 (r15)
+Pin pinRet1(33, LOW);  // Return 1 (r1)
+Pin pinRet2(34, LOW);  // Return 2 (r3)
+Pin pinRet3(35, LOW);  // Return 3 (r5)
+Pin pinRet4(36, LOW);  // Return 4 (r7)
+Pin pinRet5(37, LOW);  // Return 5 (r9)
+Pin pinRet6(38, LOW);  // Return 6 (r11)
+Pin pinRet7(39, LOW);  // Return 7 (r13)
+Pin pinRet8(27, LOW);  // Return 8 (r15)
 
 Pin pinG2APins[] = { pinG2Afnc, pinG2Ak2j, pinG2Akbd };
 Pin pinRetPins[] = { pinRet1, pinRet2, pinRet3, pinRet4, pinRet5, pinRet6, pinRet7, pinRet8 };

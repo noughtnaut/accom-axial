@@ -12,6 +12,14 @@ private:
   int initState;  // Pass (HIGH|LOW) to specify initial signal level
 
 public:
+  Pin(int numberThis, int actStateThis) {
+    number = numberThis;
+    mode = INPUT;
+    actState = actStateThis;
+
+    pinMode(number, INPUT_PULLUP);
+  }
+
   Pin(int numberThis, int modeThis, int actStateThis, int initStateThis) {
     number = numberThis;
     mode = modeThis;
