@@ -7,8 +7,8 @@
 
 #include "01_pin.h"
 
-Pin pinLed(LED_BUILTIN, OUTPUT, LOW, LOW);  // Heartbeat LED
-bool colour = true;
+Pin pinLed(LED_BUILTIN, OUTPUT, HIGH, HIGH);  // Heartbeat LED
+bool colour;
 
 void teensyHeartbeat() {
   while (true) {
