@@ -54,7 +54,7 @@ void scanKeyboard() {
       pinSelA.setActive(sA);
       pinSelB.setActive(sB);
       pinSelC.setActive(sC);
-      delayMicroseconds(DMX_SETTLE_TIME_MICROS);  // Allow time for DMX to settle
+      delayMicroseconds(DMX_SETTLE_TIME_MICROS); // Allow time for DMX to settle
       // Scan each return line
       for (int r = 0; r <= 7; r++) {
         Key& key = keymap.get(g, sA, sB, sC, r);

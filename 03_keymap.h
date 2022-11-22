@@ -23,11 +23,11 @@ public:
     label = str;
   }
 
-  const int getUsbKeyCode() {
+  int getUsbKeyCode() {
     return usbKeyCode;
   }
 
-  const bool isStandardUsbKey() {
+  bool isStandardUsbKey() {
     return -1 != usbKeyCode;
   }
 
