@@ -7,14 +7,15 @@
 
 #include "01_pin.h"
 
-Pin pinLed(LED_BUILTIN, OUTPUT, HIGH, HIGH);  // Heartbeat LED
-bool colour;
-
 void teensyHeartbeat() {
+  bool colour = true;
+  const int DELAY_MILLIS = 1250;
+  Pin pinLed(LED_BUILTIN, OUTPUT, HIGH, HIGH);  // Heartbeat LED
+
   while (true) {
-    Serial.println(colour ? "♥" : "♡");
+//    Serial.println(colour ? "♥" : "♡");
     pinLed.setActive(colour);
-    threads.delay(5000);
+    threads.delay(DELAY_MILLIS);
     colour = !colour;
     threads.yield();
   }
