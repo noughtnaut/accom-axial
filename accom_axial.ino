@@ -5,6 +5,7 @@
 
 #include "02_heartbeat.h"
 #include "04_keyboard.h"
+#include "06_display.h"
 
 void startSerial() {
   Serial.begin(0);  // Will always be USB speed
@@ -26,6 +27,7 @@ void setup() {
 //  setupConfig();
 //  sdfsSetup();
   setupKeyboard();
+  setupDisplay();
 
   Serial.println("initialised ok");
 }
