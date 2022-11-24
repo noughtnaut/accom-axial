@@ -16,8 +16,12 @@
 
 const int VFD_BAUD_DELAY_MICROS = 105; // 1.000.000 / 9.600
 const int VFD_CMD_RESET = 0xFF; // clears display and memory, sets power on condition
-const int VFD_DC5 = 0x15; // col 1, row 5 -- cursor blinks
-const int VFD_CM2 = 0x17; // col 1, row 7 -- block cursor
+const int VFD_CURSOR_HIDE = 0x14; // DC4 "cursor turns off"
+const int VFD_CURSOR_SHOW = 0x13; // DC3 "cursor turns on"
+const int VFD_CURSOR_BLINK = 0x15; // DC5 "cursor turns on and blinks"
+const int VFD_CURSOR_BLOCK = 0x17; // CM2 "lit
+//const int VFD_CURSOR_LINE = 0x16; // CM1 ??? TODO check if this is true, datasheet says "no action"
+//const int VFD_CURSOR_INVERT = 0x18; // CM3 "lit in reverse" ??? TODO verify this means "inverted"
 
 // TODO The pin numbers below are for the wrong socket!
 Pin pinBusy(51, HIGH); // BUSY (r27)
@@ -31,27 +35,6 @@ class Vfd {
 
 private:
 
-/*
-A  0100 0001
-Y  0101 1001 = 0x59 = c5r9
-Z  0101 1010
-h  0110 1000
-o  0110 1111
-y  0111 1001
-z  0111 1010
-
-<= 1111 0000
->= 1111 0001
-_| 1111 1100
-£  1111 1000
-~  1111 1110
-|> 1110 1011
-oo 1111 0101
-§  1111 1001
-!  0010 0001
-~  1111 1110
-*/
-
   void sendSerialByte(int byte) {
     // Ensure VFD is ready to receive data
     if (pinBusy.isActive()) {
@@ -61,7 +44,6 @@ oo 1111 0101
       // Serial.println("ok");
     }
 
-    // Do not set "Begin transmission" signal
     // Send one "0" start bit
     pinDS.setActive(false);
     delayMicroseconds(VFD_BAUD_DELAY_MICROS);
@@ -78,13 +60,11 @@ oo 1111 0101
     pinDS.setActive(true);
     delayMicroseconds(2 * VFD_BAUD_DELAY_MICROS);
     pinDS.setActive(false);
-    // Do not set "End transmission" signal
   }
 
   void sendCommand(int byte) {
     // Begin transmission
     pinWR.setActive(true);
-    delayMicroseconds(VFD_BAUD_DELAY_MICROS);
 
     // Send command
     pinA0.setActive(true);
@@ -96,7 +76,19 @@ oo 1111 0101
 
   void sendData(int byte) {
     pinA0.setActive(false);
+    // Do not send "Begin transmission"
     sendSerialByte(byte);
+    // Do not send "End transmission"
+  }
+
+  void sendData(String text) {
+    pinA0.setActive(false);
+    int len = text.length();
+    const char *c = text.c_str();
+    sendSerialByte(0); // FIXME Why does the first character get eaten?
+    for (int i=0; i<len; i++) {
+      sendSerialByte(c[i]);
+    }
   }
 
 public:
@@ -119,14 +111,30 @@ public:
     pinBL.setActive(toBlank);
   }
 
+  void setCursorHide() { // FIXME Seems correct but doesn't work
+    sendData(VFD_CURSOR_HIDE);
+  }
+
+  void setCursorShow() { // FIXME Seems correct but doesn't work
+    sendData(VFD_CURSOR_SHOW);
+  }
+
   void setCursorBlink() {
-    sendData(VFD_DC5);
+    sendData(VFD_CURSOR_BLINK);
   }
 
   void setCursorBlock() {
-    sendData(VFD_CM2);
+    sendData(VFD_CURSOR_BLOCK);
   }
 
+//  void setCursorLine() {
+//    sendData(VFD_CURSOR_LINE);
+//  }
+//
+//  void setCursorPosition(int pos) {
+//    sendCommand(pos);
+//  }
+//
   void reset() {
     sendCommand(VFD_CMD_RESET);
   }
@@ -139,8 +147,10 @@ public:
    * Slot 1..6, row 1 (top) or 2 (bottom)
   **/
   void setText(int slot, int row, String text) {
-    Serial.printf("VFD row %i slot %i: '%s'\n", row, slot, text.c_str());
-//    sendData(text); // TODO Rework this to send a byte at a time
+    Serial.printf("VFD row %i slot %i: '%s' ", row, slot, text.c_str());
+//    setCursorPosition(12);
+    sendData(text);
+    Serial.println("ok");
   }
 };
 

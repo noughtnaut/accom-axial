@@ -17,7 +17,8 @@ void startSerial() {
 }
 
 void loop() {
-  scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to randomly just stop?
+// FIXME Disabled while testing VFD on the same socket
+//  scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to randomly just stop?
 }
 
 void setup() {
