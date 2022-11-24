@@ -11,6 +11,7 @@ Vfd vfd;
 int setupDisplay() {
   Serial.print("display:");
   vfd = Vfd();
+  vfd.reset();
 
   vfd.sendCustomByte(0b00000000u);
   // The above should not print anything,
@@ -21,8 +22,12 @@ int setupDisplay() {
   // The above should print a capital 'Z' if the baud rate is correct,
   // even if the data is sent in the wrong order.
 
-  vfd.sendCustomByte(0b10100010u);
+  vfd.sendCustomByte(0b01000101u);
   // The above should print a capital 'E' if the baud rate is correct
+  // and the data is sent in the correct order.
+
+  vfd.sendCustomByte(0x67); // 'g' = col 6 row 7 = 0b01100111u
+  // The above should print a 'g' if the baud rate is correct
   // and the data is sent in the correct order.
 
   vfd.sendCustomByte(0b10000000u);
@@ -38,9 +43,6 @@ int setupDisplay() {
   vfd.setBlank(true);
   delay(500);
   vfd.setBlank(false);
-//  vfd.setBlockCursor();
-//  vfd.setText(1, 1, "Hello,");
-//  vfd.setText(1, 2, "World!");
   Serial.println("ok");
   return 0;
 }

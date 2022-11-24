@@ -14,29 +14,16 @@
  * Pin 17 (WR) should be set high while sending a packet, then set low.
 **/
 
-const int VFD_SETTLE_TIME_MICROS_SETUP = 1; // 10ns
-// const int VFD_SETTLE_TIME_MICROS_PULSE = 1; // 100ns
-const int VFD_SETTLE_TIME_MICROS_HOLD = 1; // 25ns
 const int VFD_BAUD_DELAY_MICROS = 105; // 1.000.000 / 9.600
-// Sending only 0's with <437 micros yields trailing 1's. Stop bits?
-const int VFD_CLR = 0x0C; // col 0, row C -- reset screen and buffer
+const int VFD_CMD_RESET = 0xFF; // clears display and memory, sets power on condition
 const int VFD_DC5 = 0x15; // col 1, row 5 -- cursor blinks
 const int VFD_CM2 = 0x17; // col 1, row 7 -- block cursor
 
 // TODO The pin numbers below are for the wrong socket!
 Pin pinBusy(51, HIGH); // BUSY (r27)
-//Pin pinD7(27, OUTPUT, HIGH, HIGH);  // Rx7 (r1)  -.
-//Pin pinD6(39, OUTPUT, HIGH, HIGH);  // Rx6 (r3)   |
-//Pin pinD5(38, OUTPUT, HIGH, HIGH);  // Rx5 (r5)   |
-//Pin pinD4(37, OUTPUT, HIGH, HIGH);  // Rx4 (r7)    > Parallel data
-//Pin pinD3(36, OUTPUT, HIGH, HIGH);  // Rx3 (r9)   |
-//Pin pinD2(35, OUTPUT, HIGH, HIGH);  // Rx2 (r11)  |
-//Pin pinD1(34, OUTPUT, HIGH, HIGH);  // Rx1 (r13)  |
-//Pin pinD0(33, OUTPUT, HIGH, HIGH);  // Rx0 (r15) -'
 Pin pinWR(40, OUTPUT, HIGH, LOW);  // WR (r17)
-Pin pinA0(41, OUTPUT, HIGH, LOW);  // A0 (r19)
+Pin pinA0(41, OUTPUT, LOW, HIGH);  // A0 (r19)
 Pin pinCS(53, OUTPUT, HIGH, LOW);  // CS (r23)
-//Pin pinT0(52, OUTPUT, HIGH, LOW);  // T0 (r25), pull down AT POWER-ON to test
 Pin pinBL(30, OUTPUT, LOW, HIGH);  // BL (r29), pull down to blank
 Pin pinDS(32, OUTPUT, HIGH, LOW);  // RxS (r33) Serial data
 
@@ -74,10 +61,7 @@ oo 1111 0101
       // Serial.println("ok");
     }
 
-    // Begin transmission
-    pinWR.setActive(true);
-    delayMicroseconds(VFD_SETTLE_TIME_MICROS_SETUP);
-
+    // Do not set "Begin transmission" signal
     // Send one "0" start bit
     pinDS.setActive(false);
     delayMicroseconds(VFD_BAUD_DELAY_MICROS);
@@ -94,14 +78,20 @@ oo 1111 0101
     pinDS.setActive(true);
     delayMicroseconds(2 * VFD_BAUD_DELAY_MICROS);
     pinDS.setActive(false);
-
-    // End transmission
-    pinWR.setActive(false);
+    // Do not set "End transmission" signal
   }
 
   void sendCommand(int byte) {
+    // Begin transmission
+    pinWR.setActive(true);
+    delayMicroseconds(VFD_BAUD_DELAY_MICROS);
+
+    // Send command
     pinA0.setActive(true);
     sendSerialByte(byte);
+
+    // End transmission
+    pinWR.setActive(false);
   }
 
   void sendData(int byte) {
@@ -137,8 +127,8 @@ public:
     sendData(VFD_CM2);
   }
 
-  void clear() {
-    sendData(VFD_CLR);
+  void reset() {
+    sendCommand(VFD_CMD_RESET);
   }
 
   void sendCustomByte(int byte) {
