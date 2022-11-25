@@ -13,30 +13,29 @@
  * Pin 19 (A0) should be set low to send data, or high to send commands.
  * Pin 17 (WR) should be set high while sending a packet, then set low.
 **/
-
-const int VFD_BAUD_DELAY_MICROS = 105; // 1.000.000 / 9.600
-const int VFD_CMD_RESET = 0xFF; // clears display and memory, sets power on condition
-const int VFD_CURSOR_HIDE = 0x14; // DC4 "cursor turns off"
-const int VFD_CURSOR_SHOW = 0x13; // DC3 "cursor turns on"
-const int VFD_CURSOR_BLINK = 0x15; // DC5 "cursor turns on and blinks"
-const int VFD_CURSOR_BLOCK = 0x17; // CM2 "lit
-//const int VFD_CURSOR_LINE = 0x16; // CM1 ??? TODO check if this is true, datasheet says "no action"
-//const int VFD_CURSOR_INVERT = 0x18; // CM3 "lit in reverse" ??? TODO verify this means "inverted"
-const int VFD_HT = 0x09; // HT "cursor position shifts one character to the right (no wrap)"
-const int VFD_CR = 0x0d; // CR "cursor position shifts to the left end"
-const int VFD_ESC = 0x1b; // ESC "the cursor position may be defined by one byte after the ESC data"
-
-// TODO The pin numbers below are for the wrong socket!
-Pin pinBusy(51, HIGH); // BUSY (r27)
-Pin pinWR(40, OUTPUT, HIGH, LOW);  // WR (r17)
-Pin pinA0(41, OUTPUT, LOW, HIGH);  // A0 (r19)
-Pin pinCS(53, OUTPUT, HIGH, LOW);  // CS (r23)
-Pin pinBL(30, OUTPUT, LOW, HIGH);  // BL (r29), pull down to blank
-Pin pinDS(32, OUTPUT, HIGH, LOW);  // RxS (r33) Serial data
-
 class Vfd {
 
 private:
+
+  static const int VFD_BAUD_DELAY_MICROS = 105; // 1.000.000 / 9.600
+  static const int VFD_CMD_RESET = 0xFF; // clears display and memory, sets power on condition
+  static const int VFD_CURSOR_HIDE = 0x14; // DC4 "cursor turns off"
+  static const int VFD_CURSOR_SHOW = 0x13; // DC3 "cursor turns on"
+  static const int VFD_CURSOR_BLINK = 0x15; // DC5 "cursor turns on and blinks"
+  static const int VFD_CURSOR_BLOCK = 0x17; // CM2 "lit
+  //static const int VFD_CURSOR_LINE = 0x16; // CM1 ??? TODO check if this is true, datasheet says "no action"
+  //static const int VFD_CURSOR_INVERT = 0x18; // CM3 "lit in reverse" ??? TODO verify this means "inverted"
+  static const int VFD_HT = 0x09; // HT "cursor position shifts one character to the right (no wrap)"
+  static const int VFD_CR = 0x0d; // CR "cursor position shifts to the left end"
+  static const int VFD_ESC = 0x1b; // ESC "the cursor position may be defined by one byte after the ESC data"
+
+  // TODO The pin numbers below are for the wrong socket!
+  Pin pinBusy = Pin(51, HIGH); // BUSY (r27)
+  Pin pinWR = Pin(40, OUTPUT, HIGH, LOW);  // WR (r17)
+  Pin pinA0 = Pin(41, OUTPUT, LOW, HIGH);  // A0 (r19)
+  Pin pinCS = Pin(53, OUTPUT, HIGH, LOW);  // CS (r23)
+  Pin pinBL = Pin(30, OUTPUT, LOW, HIGH);  // BL (r29), pull down to blank
+  Pin pinDS = Pin(32, OUTPUT, HIGH, LOW);  // RxS (r33) Serial data
 
   void sendSerialByte(int byte) {
     // Ensure VFD is ready to receive data
