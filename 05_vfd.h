@@ -22,6 +22,9 @@ const int VFD_CURSOR_BLINK = 0x15; // DC5 "cursor turns on and blinks"
 const int VFD_CURSOR_BLOCK = 0x17; // CM2 "lit
 //const int VFD_CURSOR_LINE = 0x16; // CM1 ??? TODO check if this is true, datasheet says "no action"
 //const int VFD_CURSOR_INVERT = 0x18; // CM3 "lit in reverse" ??? TODO verify this means "inverted"
+const int VFD_HT = 0x09; // HT "cursor position shifts one character to the right (no wrap)"
+const int VFD_CR = 0x0d; // CR "cursor position shifts to the left end"
+const int VFD_ESC = 0x1b; // ESC "the cursor position may be defined by one byte after the ESC data"
 
 // TODO The pin numbers below are for the wrong socket!
 Pin pinBusy(51, HIGH); // BUSY (r27)
@@ -94,47 +97,103 @@ private:
 public:
 
   Vfd() {
+    Vfd(1, 20);
+  }
+
+  Vfd(int setHeight, int setWidth) {
+    Vfd(setHeight, setWidth, 0);
+  }
+
+  Vfd(int setHeight, int setWidth, int setSlots) {
     Serial.print("vfd:");
-    // Anything needed here?
+    height = setHeight;
+    width = setWidth;
+    if (setSlots) {
+      numSlots = setSlots;
+      widthPerSlot = ROUNDED_INT_DIV(width, numSlots);
+      for (int i=0; i<numSlots; i++) {
+        int centre = i*widthPerSlot + widthPerSlot/2;
+//        Serial.println(centre);
+        slotCentre.push_back(centre);
+      }
+    }
     Serial.println("ok");
   }
+
+  int getHeight() {
+    return height;
+  }
+
+  int getWidth() {
+    return width;
+  }
+
+  int getNumSlots() {
+    return numSlots;
+  }
+
   bool isBusy() {
     return pinBusy.isActive();
   }
 
-  bool isBlank() {
-    return pinBL.isActive();
+  void on() {
+    pinBL.setActive(false);
   }
 
-  void setBlank(bool toBlank) {
-//    Serial.printf("VFD:setBlank(%s)\n", toBlank?"blank":"lit");
-    pinBL.setActive(toBlank);
+  void off() {
+    pinBL.setActive(true);
   }
 
-  void setCursorHide() { // FIXME Seems correct but doesn't work
+  void cursorHide() { // FIXME Seems correct but doesn't work
     sendData(VFD_CURSOR_HIDE);
   }
 
-  void setCursorShow() { // FIXME Seems correct but doesn't work
+  void cursorShow() { // FIXME Seems correct but doesn't work
     sendData(VFD_CURSOR_SHOW);
   }
 
-  void setCursorBlink() {
+  void cursorBlink() {
     sendData(VFD_CURSOR_BLINK);
   }
 
-  void setCursorBlock() {
+  void cursorBlock() {
     sendData(VFD_CURSOR_BLOCK);
   }
 
-//  void setCursorLine() {
+//  void cursorLine() {
 //    sendData(VFD_CURSOR_LINE);
 //  }
-//
-//  void setCursorPosition(int pos) {
-//    sendCommand(pos);
-//  }
-//
+
+  void cursorPosition(int row, int col) {
+    if(row >= 0 && row < getHeight()
+    && col >= 0 && col < getWidth()
+    ) {
+      int target = col;
+      for (int i=0; i < row; i++)
+        target += getWidth();
+      switch (0) { // FIXME Various approaches
+        case 0: // Reposition relative to current position
+          sendData(VFD_CR); // FIXME Only works first time???
+          for (int i=0; i < target; i++)
+            sendData(VFD_HT);
+          break;
+        case 1: // Use command to reposition
+          sendCommand(0); // Set position 0
+          // FIXME Works, but also clears all characters
+          for (int i=0; i < target; i++)
+            sendData(VFD_HT);
+          break;
+        case 2: // Use data to reposition
+          sendData(VFD_ESC); // The next byte after this sets the position
+          sendData(target); // FIXME No effect...
+          break;
+        case 3:
+          // TODO Implement a software buffer and reset the entire display at every change
+          break;
+      }
+    }
+  }
+
   void reset() {
     sendCommand(VFD_CMD_RESET);
   }
@@ -143,12 +202,9 @@ public:
     sendData(byte);
   }
 
-  /**
-   * Slot 1..6, row 1 (top) or 2 (bottom)
-  **/
-  void setText(int slot, int row, String text) {
-    Serial.printf("VFD row %i slot %i: '%s' ", row, slot, text.c_str());
-//    setCursorPosition(12);
+  void setTextAt(int row, int col, String text) {
+    Serial.printf("VFD row %i slot %i: '%s' ", row, col, text.c_str());
+    cursorPosition(row, col);
     sendData(text);
     Serial.println("ok");
   }

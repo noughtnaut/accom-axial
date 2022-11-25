@@ -10,11 +10,22 @@ Vfd vfd;
 
 int setupDisplay() {
   Serial.print("display:");
-  vfd = Vfd();
+  vfd = Vfd(2, 40, 6);
   vfd.reset();
 
-  vfd.setText(1, 1, "Hello, ");
-  vfd.setText(1, 2, "World!");
+  // Paint all characters so we can tell skips from overwrites
+  for (int row=0; row < vfd.getHeight(); row++) {
+    for (int col=0; col < vfd.getWidth(); col++) {
+      vfd.sendCustomByte('.');
+    }
+  }
+  // Should print:
+  // <.................................Hello,
+  // World!.................................>
+  vfd.setTextAt(1, 0, "World!");
+  vfd.setTextAt(0, 34, "Hello,");
+  vfd.setTextAt(0, 0, "<");
+  vfd.setTextAt(1, 39, ">");
 
   vfd.setCursorBlock();
   vfd.setCursorBlink();
