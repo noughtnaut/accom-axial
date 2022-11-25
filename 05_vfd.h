@@ -3,8 +3,13 @@
 
 #include <Arduino.h>
 // Other includes must be listed in the main INO file
+#include <vector>
 
 #include "01_pin.h"
+
+// see: https://stackoverflow.com/a/18067292/14577190
+#define ROUNDED_INT_DIV(n,d) ((((n)<0)^((d)<0))?(((n)-(d)/2)/(d)):(((n)+(d)/2)/(d)))
+
 /**
  * Display driver for NEC FC40X2EA-AB
  *
@@ -26,6 +31,7 @@ private:
   //static const int VFD_CURSOR_LINE = 0x16; // CM1 ??? TODO check if this is true, datasheet says "no action"
   //static const int VFD_CURSOR_INVERT = 0x18; // CM3 "lit in reverse" ??? TODO verify this means "inverted"
   static const int VFD_HT = 0x09; // HT "cursor position shifts one character to the right (no wrap)"
+  //static const int VFD_LF = 0x0a; // LF "all characters cleared, position remains"
   static const int VFD_CR = 0x0d; // CR "cursor position shifts to the left end"
   static const int VFD_ESC = 0x1b; // ESC "the cursor position may be defined by one byte after the ESC data"
 
@@ -36,6 +42,13 @@ private:
   Pin pinCS = Pin(53, OUTPUT, HIGH, LOW);  // CS (r23)
   Pin pinBL = Pin(30, OUTPUT, LOW, HIGH);  // BL (r29), pull down to blank
   Pin pinDS = Pin(32, OUTPUT, HIGH, LOW);  // RxS (r33) Serial data
+
+  int width = 40;
+  int height = 2;
+  int numSlots = 0;
+  int widthPerSlot = width;
+  std::vector<int> slotCentre;
+  std::vector<String> displayCache;
 
   void sendSerialByte(int byte) {
     // Ensure VFD is ready to receive data
@@ -93,6 +106,21 @@ private:
     }
   }
 
+  void updateDisplay() {
+//    Serial.print("updateDisplay:");
+    // Clear display
+    sendCommand(0);
+    // Fill display from cache
+    for (int row=0; row<height; row++) {
+      String text = displayCache.at(row);
+//      Serial.printf("row %i «%s»\n", row, text.c_str());
+      for (int col=0; col<width; col++) {
+        sendCustomByte(text.charAt(col));
+      }
+    }
+//    Serial.println("ok");
+  }
+
 public:
 
   Vfd() {
@@ -105,16 +133,25 @@ public:
 
   Vfd(int setHeight, int setWidth, int setSlots) {
     Serial.print("vfd:");
+    reset();
     height = setHeight;
     width = setWidth;
     if (setSlots) {
       numSlots = setSlots;
       widthPerSlot = ROUNDED_INT_DIV(width, numSlots);
-      for (int i=0; i<numSlots; i++) {
-        int centre = i*widthPerSlot + widthPerSlot/2;
-//        Serial.println(centre);
+      for (int slot=0; slot<numSlots; slot++) {
+        int centre = slot*widthPerSlot + widthPerSlot/2;
         slotCentre.push_back(centre);
       }
+    }
+    for (int row=0; row<height; row++) {
+      // TODO Optimise this
+      String text = String(' ');
+      while (text.length()<(unsigned int)width) {
+        text.concat(text);
+      }
+      text = text.substring(0, width);
+      displayCache.push_back(text);
     }
     Serial.println("ok");
   }
@@ -167,10 +204,13 @@ public:
     if(row >= 0 && row < getHeight()
     && col >= 0 && col < getWidth()
     ) {
+      Serial.print(".");
+      // TODO Optimise to use direct position instead of relative
+      // Command write byte -> "set the cursor position"
       int target = col;
       for (int i=0; i < row; i++)
         target += getWidth();
-      switch (0) { // FIXME Various approaches
+      switch (3) { // FIXME Various approaches
         case 0: // Reposition relative to current position
           sendData(VFD_CR); // FIXME Only works first time???
           for (int i=0; i < target; i++)
@@ -203,9 +243,35 @@ public:
 
   void setTextAt(int row, int col, String text) {
     Serial.printf("VFD row %i slot %i: '%s' ", row, col, text.c_str());
-    cursorPosition(row, col);
-    sendData(text);
+    for (int i=0; i<(int)text.length(); i++) {
+      displayCache.at(row).setCharAt(col+i, text.charAt(i));
+    }
+    // TODO See if any of these are faster:
+    // a) copy substring() at destination, then use replace()
+    // b) concatenate prefix + new string + suffix
+    updateDisplay();
+//    displayCache.setCharAt();
+//    cursorPosition(row, col);
+//    sendData(text);
     Serial.println("ok");
+  }
+
+  void setTextCentredAt(int row, int col, String text) {
+//    Serial.printf("VFD text centred at row %i col %i: '%s' ", row, col, text.c_str());
+    int posLeft = col - text.length()/2;
+    setTextAt(row, posLeft, text);
+//    Serial.println("ok");
+  }
+
+  /**
+   * Row 0 (top) or 1 (bottom), slot 0..5
+  **/
+  void setSlotText(int row, int slot, String text) {
+//    Serial.printf("VFD row %i slot %i: '%s' ", row, slot, text.c_str());
+    int col = slotCentre.at(slot);
+    setTextCentredAt(row, col, text);
+//    setTextCentredAt(row, col, text.substring(0, widthPerSlot));
+//    Serial.println("ok");
   }
 };
 
