@@ -9,7 +9,7 @@
 Vfd vfd;
 
 int setupDisplay() {
-  Serial.print("display:");
+//  Serial.print("display:");
   vfd = Vfd(2, 40, 6);
 //  vfd.reset();
 
@@ -26,10 +26,8 @@ int setupDisplay() {
   vfd.setTextAt(0, 34, "Hello,");
   vfd.setTextAt(0, 0, "<");
   vfd.setTextAt(1, 39, ">");
-  delay(1000);
-  vfd.setTextAt(0, 18, "yay me");
+  delay(1500);
 
-/*
   char buffer[10] = {0}; // Must be big enough
   for (int row=vfd.getHeight()-1; row>=0; row--) {
     for (int slot=vfd.getNumSlots()-1; slot>=0; slot--) {
@@ -39,7 +37,7 @@ int setupDisplay() {
 //      delay(1000);
     }
   }
-*/
+
 
   delay(500);
 //  vfd.cursorBlock();
@@ -72,7 +70,7 @@ int setupDisplay() {
   delay(300);
   vfd.on();
 
-  Serial.println("ok");
+//  Serial.println("ok");
   return 0;
 }
 

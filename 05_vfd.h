@@ -132,7 +132,7 @@ public:
   }
 
   Vfd(int setHeight, int setWidth, int setSlots) {
-    Serial.print("vfd:");
+//    Serial.print("vfd:");
     reset();
     height = setHeight;
     width = setWidth;
@@ -153,7 +153,7 @@ public:
       text = text.substring(0, width);
       displayCache.push_back(text);
     }
-    Serial.println("ok");
+//    Serial.println("ok");
   }
 
   int getHeight() {
@@ -242,7 +242,7 @@ public:
   }
 
   void setTextAt(int row, int col, String text) {
-    Serial.printf("VFD row %i slot %i: '%s' ", row, col, text.c_str());
+//    Serial.printf("VFD row %i slot %i: '%s' ", row, col, text.c_str());
     for (int i=0; i<(int)text.length(); i++) {
       displayCache.at(row).setCharAt(col+i, text.charAt(i));
     }
@@ -253,7 +253,7 @@ public:
 //    displayCache.setCharAt();
 //    cursorPosition(row, col);
 //    sendData(text);
-    Serial.println("ok");
+//    Serial.println("ok");
   }
 
   void setTextCentredAt(int row, int col, String text) {

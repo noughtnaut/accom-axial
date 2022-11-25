@@ -12,8 +12,6 @@ void startSerial() {
   while (!Serial)
     ;  // wait for serial port to connect // TODO Don't *require* serial for production use
   Serial.println();
-  Serial.println("--- Accom Axial ---");
-  Serial.println("initialising ...");
 }
 
 void loop() {
@@ -22,8 +20,10 @@ void loop() {
 }
 
 void setup() {
-  startSerial();
+  Serial.println("--- Accom Axial ---");
+  Serial.println("initialising ...");
 
+  startSerial();
   setupTeensyHeartbeat();
 //  setupConfig();
 //  sdfsSetup();
