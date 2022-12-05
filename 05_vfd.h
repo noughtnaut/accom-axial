@@ -12,11 +12,6 @@
 
 /**
  * Display driver for NEC FC40X2EA-AB
- *
- * No data should be sent while pin 27 (BUSY) is high.
- * Pin 23 (CS) should always be set low.
- * Pin 19 (A0) should be set low to send data, or high to send commands.
- * Pin 17 (WR) should be set high while sending a packet, then set low.
 **/
 class Vfd {
 
@@ -35,13 +30,13 @@ private:
   static const int VFD_CR = 0x0d; // CR "cursor position shifts to the left end"
   static const int VFD_ESC = 0x1b; // ESC "the cursor position may be defined by one byte after the ESC data"
 
-  // TODO The pin numbers below are for the wrong socket!
-  Pin pinBusy = Pin(51, HIGH); // BUSY (r27)
-  Pin pinWR = Pin(40, OUTPUT, HIGH, LOW);  // WR (r17)
-  Pin pinA0 = Pin(41, OUTPUT, LOW, HIGH);  // A0 (r19)
-  Pin pinCS = Pin(53, OUTPUT, HIGH, LOW);  // CS (r23)
-  Pin pinBL = Pin(30, OUTPUT, LOW, HIGH);  // BL (r29), pull down to blank
-  Pin pinDS = Pin(32, OUTPUT, HIGH, LOW);  // RxS (r33) Serial data
+  Pin pinBusy = Pin(26, HIGH); // BUSY (r31->r27), red wire
+  // FIXME There is something wrong with the wiring/code for Teensy pin 24:
+   // why is it flickering, and why does BL not work when this is an output pin?
+  Pin pinWR = Pin(24, OUTPUT, HIGH, LOW);  // WR (r29->r17), red wire
+  Pin pinA0 = Pin(14, OUTPUT, LOW, HIGH);  // A0 (r30->r19), yellow wire
+  Pin pinBL = Pin(12, OUTPUT, LOW, HIGH);  // BL (r32->r29), pull down to blank, yellow wire
+  Pin pinDS = Pin(25, OUTPUT, HIGH, LOW);  // RxS (r33->r33) Serial data, white wire
 
   int width = 40;
   int height = 2;
@@ -51,9 +46,10 @@ private:
   std::vector<String> displayCache;
 
   void sendSerialByte(int byte) {
+//    Serial.print("sendSerialByte:");
     // Ensure VFD is ready to receive data
     if (pinBusy.isActive()) {
-      // Serial.print("Waiting for VFD to become ready ... ");
+//      Serial.print("Waiting for VFD to become ready ... ");
       while (pinBusy.isActive())
         ;  // wait for VFD to become ready
       // Serial.println("ok");
@@ -75,6 +71,7 @@ private:
     pinDS.setActive(true);
     delayMicroseconds(2 * VFD_BAUD_DELAY_MICROS);
     pinDS.setActive(false);
+//    Serial.println("ok");
   }
 
   void sendCommand(int byte) {
@@ -112,10 +109,8 @@ private:
     sendCommand(0);
     // Fill display from cache
     for (int row=0; row<height; row++) {
-      String text = displayCache.at(row);
-//      Serial.printf("row %i «%s»\n", row, text.c_str());
       for (int col=0; col<width; col++) {
-        sendCustomByte(text.charAt(col));
+        sendCustomByte(displayCache.at(row).charAt(col));
       }
     }
 //    Serial.println("ok");
@@ -179,7 +174,7 @@ public:
   void off() {
     pinBL.setActive(true);
   }
-
+/*
   void cursorHide() { // FIXME Seems correct but doesn't work
     sendData(VFD_CURSOR_HIDE);
   }
@@ -232,7 +227,7 @@ public:
       }
     }
   }
-
+*/
   void reset() {
     sendCommand(VFD_CMD_RESET);
   }
@@ -242,13 +237,14 @@ public:
   }
 
   void setTextAt(int row, int col, String text) {
-//    Serial.printf("VFD row %i slot %i: '%s' ", row, col, text.c_str());
+//    Serial.printf("setTextAt row %i col %i: '%s' ", row, col, text.c_str());
     for (int i=0; i<(int)text.length(); i++) {
       displayCache.at(row).setCharAt(col+i, text.charAt(i));
     }
     // TODO See if any of these are faster:
     // a) copy substring() at destination, then use replace()
     // b) concatenate prefix + new string + suffix
+    // c) should we in fact be using the CS pin to send commands???
     updateDisplay();
 //    displayCache.setCharAt();
 //    cursorPosition(row, col);
@@ -256,10 +252,10 @@ public:
 //    Serial.println("ok");
   }
 
-  void setTextCentredAt(int row, int col, String text) {
-//    Serial.printf("VFD text centred at row %i col %i: '%s' ", row, col, text.c_str());
-    int posLeft = col - text.length()/2;
-    setTextAt(row, posLeft, text);
+  void setTextCentredAt(int row, int centre, String text) {
+//    Serial.printf("VFD text centred at row %i col %i: '%s' ", row, centre, text.c_str());
+    int col = centre - text.length()/2;
+    setTextAt(row, col, text);
 //    Serial.println("ok");
   }
 

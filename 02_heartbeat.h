@@ -13,8 +13,8 @@ void teensyHeartbeat() {
   Pin pinLed(LED_BUILTIN, OUTPUT, HIGH, HIGH);  // Heartbeat LED
 
   while (true) {
-//    Serial.println(colour ? "♥" : "♡");
     pinLed.setActive(colour);
+//    Serial.println(colour ? "♥" : "♡");
     threads.delay(DELAY_MILLIS);
     colour = !colour;
     threads.yield();

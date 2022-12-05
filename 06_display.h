@@ -9,16 +9,15 @@
 Vfd vfd;
 
 int setupDisplay() {
-//  Serial.print("display:");
+  Serial.print("display:");
   vfd = Vfd(2, 40, 6);
-//  vfd.reset();
 
   // Paint all characters so we can tell skips from overwrites
-//  for (int row=0; row < vfd.getHeight(); row++) {
-//    for (int col=0; col < vfd.getWidth(); col++) {
-//      vfd.sendCustomByte('.');
-//    }
-//  }
+  for (int row=0; row < vfd.getHeight(); row++) {
+    for (int col=0; col < vfd.getWidth(); col++) {
+      vfd.sendCustomByte('.');
+    }
+  }
   // Should print:
   // <.................................Hello,
   // World!.................................>
@@ -26,8 +25,9 @@ int setupDisplay() {
   vfd.setTextAt(0, 34, "Hello,");
   vfd.setTextAt(0, 0, "<");
   vfd.setTextAt(1, 39, ">");
-  delay(1500);
+//  delay(1500);
 
+/*
   char buffer[10] = {0}; // Must be big enough
   for (int row=vfd.getHeight()-1; row>=0; row--) {
     for (int slot=vfd.getNumSlots()-1; slot>=0; slot--) {
@@ -56,6 +56,7 @@ int setupDisplay() {
 //  vfd.cursorMode(VFD_CURSOR_LIGHT);
 //  delay(500);
 
+*/
   // Blink the VFD so we can see we're done even without a serial monitor
   delay(300);
   vfd.off();
@@ -70,8 +71,7 @@ int setupDisplay() {
   delay(300);
   vfd.on();
 
-//  Serial.println("ok");
+  Serial.println("ok");
   return 0;
 }
-
 #endif
