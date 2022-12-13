@@ -23,21 +23,6 @@ int setupDisplay() {
   vfd.setTextAt(1, 39, ">");
   delay(2000);
 
-  // Shiny!
-  vfd.clear();
-  vfd.off();
-  vfd.setTextCentredAt(0, 25, "Big damn heroes, sir.");
-  vfd.setTextCentredAt(1, 15, "Ain't we just.");
-  vfd.fadeIn(400);
-  vfd.fadeOut(400);
-  vfd.fadeIn(400);
-  vfd.fadeOut(400);
-  vfd.fadeIn(400);
-  vfd.fadeOut(400);
-  vfd.fadeIn(400);
-  delay(500);
-  vfd.fadeOut(800);
-
   // Should print:
   // Slot1v Slot2v Slot3v Slot4v Slot5v Slot6
   // Slot1k Slot2k Slot3k Slot4k Slot5k Slot6
@@ -54,6 +39,23 @@ int setupDisplay() {
   delay(1000);
   vfd.setSlotText(0, 3, "<-overflow->");
   vfd.setSlotText(1, 2, "<--spoils neighbours-->");
+  delay(1000);
+  vfd.fadeOut(800);
+
+  // Shiny!
+  vfd.clear();
+  vfd.off();
+  vfd.setTextCentredAt(0, 25, "Big damn heroes, sir.");
+  vfd.setTextCentredAt(1, 15, "Ain't we just.");
+  vfd.fadeIn(400);
+  vfd.fadeOut(400);
+  vfd.fadeIn(400);
+  vfd.fadeOut(400);
+  vfd.fadeIn(400);
+  vfd.fadeOut(400);
+  vfd.fadeIn(400);
+  delay(500);
+  vfd.fadeOut(800);
 
   // Blink the VFD thrice so we can see we're done
   // (even without a serial monitor)
