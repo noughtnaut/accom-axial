@@ -2,7 +2,6 @@
 #define ACCOM_MAP
 
 #include <Arduino.h>
-// Other includes must be listed in the main INO file
 
 class Key {
 private:

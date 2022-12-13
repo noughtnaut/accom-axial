@@ -2,7 +2,6 @@
 #define ACCOM_KEYBOARD
 
 #include <Arduino.h>
-// Other includes must be listed in the main INO file
 
 #include "01_pin.h"
 #include "03_keymap.h"

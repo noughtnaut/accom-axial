@@ -4,7 +4,7 @@
 #define ACCOM_AXIAL
 
 #include "02_heartbeat.h"
-// #include "04_keyboard.h"
+#include "04_keyboard.h"
 #include "06_display.h"
 
 void startSerial() {
@@ -14,8 +14,7 @@ void startSerial() {
 }
 
 void loop() {
-// FIXME Disabled while testing VFD on the same socket
-//  scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to randomly just stop?
+ scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to randomly just stop?
 }
 
 void setup() {
@@ -24,9 +23,9 @@ void setup() {
   Serial.println("initialising ...");
 
   setupTeensyHeartbeat();
-//  setupConfig();
-//  sdfsSetup();
-//   setupKeyboard();
+//   setupStorage();
+//   setupConfig();
+  setupKeyboard();
   setupDisplay();
 
   Serial.println("initialised ok");

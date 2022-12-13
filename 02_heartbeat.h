@@ -3,7 +3,6 @@
 
 #include <Arduino.h>
 #include <TeensyThreads.h>
-// Other includes must be listed in the main INO file
 
 #include "01_pin.h"
 

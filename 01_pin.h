@@ -2,7 +2,6 @@
 #define ACCOM_PIN
 
 #include <Arduino.h>
-// Other includes must be listed in the main INO file
 
 class Pin {
 private:
@@ -33,7 +32,7 @@ public:
   }
 
   void setState(int newState) {
-    digitalWriteFast(number, newState ? HIGH : LOW);
+    digitalWriteFast(number, newState==LOW ? LOW : HIGH);
     //Serial.printf("setState(%i,%i) -> %s\n", number , newState, newState?"HIGH":"LOW");
   }
 
