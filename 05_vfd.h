@@ -177,11 +177,11 @@ public:
     pinBL.setActive(true);
   }
 
-  void cursorShow() { // FIXME Seems correct but doesn't work
+  void cursorShow() {
     sendData(VFD_CURSOR_SHOW);
   }
 
-  void cursorHide() { // FIXME Seems correct but doesn't work
+  void cursorHide() {
     sendData(VFD_CURSOR_HIDE);
   }
 
