@@ -103,6 +103,14 @@ void scanKeyboard() {
     pinG2A = pinG2APins[g];
     scanG2A(pinG2A);
   }
+  // Scan last G2A using a reduced address space
+  pinG2A = pinG2APins[NUM_G2A];
+  pinG2A.setActive(true);
+  scanG2ASelect(pinG2A, 0b001); // LKS 1-8
+  scanG2ASelect(pinG2A, 0b010); // LKS 9-16
+  scanG2ASelect(pinG2A, 0b000); // LKS 17-18, still wastes 6/8 iterations but eh.
+  pinG2A.setActive(false);
+
   pinLedJog.setActive(false); // Debug: Turn this LED aff after scanning
 }
 
