@@ -12,37 +12,46 @@
 
 /**
  * Display driver for NEC FC40X2EA-AB
+ * (based on datasheets for FC20X1SA and FC20X2JA)
 **/
 class Vfd {
+
+///////////////////////////////////////////////////
+//                                               //
+//  TO DO: Rework to parallel instead of serial  //
+//                                               //
+///////////////////////////////////////////////////
 
 private:
 
   static const int VFD_BAUD_DELAY_MICROS = 105; // 1.000.000 / 9.600
   static const int VFD_CMD_RESET = 0xFF; // clears display and memory, sets power on condition
+  static const int VFD_HT = 0x09; // HT "cursor position shifts one character to the right (no wrap)"
+  static const int VFD_LF = 0x0a; // LF "all characters cleared, position remains"
+  static const int VFD_CLEAR = 0x0c; // clears display and memory, sets power on condition
+  static const int VFD_CR = 0x0d; // CR "cursor position shifts to the left end"
+  static const int VFD_WRAP = 0x11; // DC1 "cursor turns on"
+  static const int VFD_SCROLL = 0x12; // DC2 "cursor turns on"
   static const int VFD_CURSOR_SHOW = 0x13; // DC3 "cursor turns on"
   static const int VFD_CURSOR_HIDE = 0x14; // DC4 "cursor turns off"
   static const int VFD_CURSOR_BLINK = 0x15; // DC5 "cursor turns on and blinks"
   static const int VFD_CURSOR_LINE = 0x16; // CM1 ??? TODO check if this is true, datasheet says "no action"
   static const int VFD_CURSOR_BLOCK = 0x17; // CM2 "lit
   static const int VFD_CURSOR_INVERT = 0x18; // CM3 "lit in reverse" ??? TODO verify this means "inverted"
-//  static const int VFD_HT = 0x09; // HT "cursor position shifts one character to the right (no wrap)"
-//  static const int VFD_LF = 0x0a; // LF "all characters cleared, position remains"
-//  static const int VFD_CR = 0x0d; // CR "cursor position shifts to the left end"
-//  static const int VFD_CLEAR = 0x0c; // clears display and memory, sets power on condition
-//  static const int VFD_ESC = 0x1b; // ESC "the cursor position may be defined by one byte after the ESC data"
+  static const int VFD_ESC = 0x1b; // ESC "the cursor position may be defined by one byte after the ESC data"
 
-  Pin pinBusy = Pin(26, HIGH); // BUSY (r31->r27), red wire
-  // FIXME There is something wrong with the wiring/code for Teensy pin 24: why is the display flickering?
-//  Pin pinWR = Pin(24, OUTPUT, HIGH, LOW);  // WR (r29->r17), red wire
-  Pin pinA0 = Pin(14, OUTPUT, LOW, HIGH);  // A0 (r30->r19), yellow wire
-  Pin pinBL = Pin(12, OUTPUT, LOW, HIGH);  // BL (r32->r29), pull down to blank, yellow wire
-  Pin pinDS = Pin(25, OUTPUT, HIGH, LOW);  // RxS (r33->r33) Serial data, white wire
+  Pin pinBusy = Pin(25, HIGH); // BUSY (r31), red wire
+  // FIXME The WR signal does not seem to work as described. Why is the display flickering when this pin is enabled?
+  // Pin pinWR = Pin(26, OUTPUT, HIGH, LOW);  // WR (r29), red wire
+  Pin pinA0 = Pin(12, OUTPUT, LOW, HIGH); // A0 (r30), yellow wire
+  Pin pinBL = Pin(14, OUTPUT, LOW, HIGH); // BL (r32), pull down to blank, yellow wire
+  Pin pinDS = Pin(24, OUTPUT, HIGH, LOW); // RxS (r33) Serial data, white wire
   // pinCS is always LOW (hardwired to GND on the back of the VFD board)
 
-  int width = 40;
-  int height = 2;
+  int numCharsPerRow = 40;
+  int numRows = 2;
   int numSlots = 0;
-  int widthPerSlot = width;
+  int numCharsPerSlot = numCharsPerRow;
   std::vector<int> slotCentre;
   std::vector<String> displayCache;
 
@@ -50,10 +59,10 @@ private:
 //    Serial.print("sendSerialByte:");
     // Ensure VFD is ready to receive data
     if (pinBusy.isActive()) {
-//      Serial.print("Waiting for VFD to become ready ... ");
+      Serial.print("Waiting for VFD to become ready ... ");
       while (pinBusy.isActive())
         ;  // wait for VFD to become ready
-      // Serial.println("ok");
+       Serial.println("ok");
     }
 
     // Send one "0" start bit
@@ -108,10 +117,10 @@ private:
   void updateDisplay() {
 //    Serial.print("updateDisplay:");
     // Clear display
-//    sendCommand(0);
+    sendData(VFD_CLEAR);
     // Fill display from cache
-    for (int row=0; row<height; row++) {
-      for (int col=0; col<width; col++) {
+    for (int row=0; row<numRows; row++) {
+      for (int col=0; col<numCharsPerRow; col++) {
         sendData(displayCache.at(row).charAt(col));
       }
     }
@@ -124,41 +133,32 @@ public:
     Vfd(1, 20);
   }
 
-  Vfd(int setHeight, int setWidth) {
-    Vfd(setHeight, setWidth, 0);
+  Vfd(int newNumRows, int newNumCharsPerRow) {
+    Vfd(newNumRows, newNumCharsPerRow, 0);
   }
 
-  Vfd(int setHeight, int setWidth, int setSlots) {
-//    Serial.print("vfd:");
-//    reset(); // FIXME Disabled until I figure out what's up with pinWR
-    height = setHeight;
-    width = setWidth;
-    if (setSlots) {
-      numSlots = setSlots;
-      widthPerSlot = ROUNDED_INT_DIV(width, numSlots);
+  Vfd(int newNumRows, int newNumCharsPerRow, int newNumSlots) {
+    Serial.print("vfd:");
+    numRows = newNumRows;
+    numCharsPerRow = newNumCharsPerRow;
+    if (newNumSlots) {
+      numSlots = newNumSlots;
+      numCharsPerSlot = ROUNDED_INT_DIV(numCharsPerRow, numSlots);
       for (int slot=0; slot<numSlots; slot++) {
-        int centre = slot*widthPerSlot + widthPerSlot/2;
+        int centre = slot*numCharsPerSlot + numCharsPerSlot/2;
         slotCentre.push_back(centre);
       }
     }
-    for (int row=0; row<height; row++) {
-      // TODO Optimise this
-      String text = String(' ');
-      while (text.length()<(unsigned int)width) {
-        text.concat(text);
-      }
-      text = text.substring(0, width);
-      displayCache.push_back(text);
-    }
-//    Serial.println("ok");
+    reset();
+    Serial.println("ok");
   }
 
-  int getHeight() {
-    return height;
+  int getNumRows() {
+    return numRows;
   }
 
-  int getWidth() {
-    return width;
+  int getNumCharsPerRow() {
+    return numCharsPerRow;
   }
 
   int getNumSlots() {
@@ -206,15 +206,15 @@ public:
     case 0: // Turn display off
       off();
       break;
+    default: // Full brightness
     case 1: // DIM1 = 100%
+      sendData(1);
+      on();
+      break;
     case 2: // DIM2 =  75%
     case 3: // DIM3 =  50%
     case 4: // DIM4 =  25%
       sendData(5-level);
-      on();
-      break;
-    default: // Full brightness
-      sendData(1);
       on();
     }
   }
@@ -241,15 +241,15 @@ public:
 
 /*
   void cursorPosition(int row, int col) {
-    if(row >= 0 && row < getHeight()
-    && col >= 0 && col < getWidth()
+    if(row >= 0 && row < getNumRows()
+    && col >= 0 && col < getNumCharsPerRow()
     ) {
       Serial.print(".");
       // TODO Optimise to use direct position instead of relative
       // Command write byte -> "set the cursor position"
       int target = col;
       for (int i=0; i < row; i++)
-        target += getWidth();
+        target += getNumCharsPerRow();
       switch (3) { // FIXME Various approaches
         case 0: // Reposition relative to current position
           sendData(VFD_CR); // FIXME Only works first time???
@@ -273,13 +273,36 @@ public:
     }
   }
 */
+
   void reset() {
-    sendCommand(VFD_CMD_RESET);
+//    sendCommand(VFD_CMD_RESET); // FIXME Disabled until I figure out what's up with pinWR
+
+    off(); // Just to avoid any flicker while resetting
+    sendRawByte(VFD_CLEAR);
+    sendRawByte(VFD_WRAP);
+
+//    cursorHide(); // For production
+    cursorLine(); // For debug
+    cursorBlink(); // For debug
+    sendData("Hello"); // For debug
+
+    sendRawByte(VFD_CR); // Move cursor to left edge
+    brightness(1); // Full brightness
+
+    // TODO Optimise this
+    for (int row=0; row<numRows; row++) {
+      String text = String(' ');
+      while (text.length()<(unsigned int)numCharsPerRow) {
+        text.concat(text);
+      }
+      text = text.substring(0, numCharsPerRow);
+      displayCache.push_back(text);
+    }
   }
 
   void fill(char filler) {
-    char buffer[width];
-    memset(buffer, filler, width);
+    char buffer[numCharsPerRow];
+    memset(buffer, filler, numCharsPerRow);
     off();
     setTextAt(0, 0, buffer);
     setTextAt(1, 0, buffer);
@@ -326,8 +349,9 @@ public:
     int col = slotCentre.at(slot);
     setTextCentredAt(row, col, text);
     // Alternatively, with boundary clipping:
-    // setTextCentredAt(row, col, text.substring(0, widthPerSlot));
+    // setTextCentredAt(row, col, text.substring(0, numCharsPerSlot));
 //    Serial.println("ok");
   }
 };
+
 #endif
