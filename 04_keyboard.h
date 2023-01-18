@@ -6,8 +6,8 @@
 #include "01_pin.h"
 #include "03_keymap.h"
 
+static const int DMX_SETTLE_TIME_MICROS = 40;
 Keymap keymap;
-const int DMX_SETTLE_TIME_MICROS = 40;
 
 // The layout next to the jog wheel is:
 //  [jog]  [var]    [shutl]
@@ -18,38 +18,38 @@ Pin pinLedSht(32, OUTPUT, LOW, HIGH);  // SHUTL LED (r33)
 Pin pinLedAbs(31, OUTPUT, LOW, HIGH);  // ABSLT LED (r31)
 Pin pinLedSwr(30, OUTPUT, LOW, HIGH);  // SWR-FADER LED (r29)
 
-const int NUM_G2A = 4;
-Pin pinG2Afnc(40, OUTPUT, LOW, HIGH);  // DMX G2A fcn (r17)
-Pin pinG2Akbd(41, OUTPUT, LOW, HIGH);  // DMX G2A kbd (r21)
-Pin pinG2Ak2j(42, OUTPUT, LOW, HIGH);  // DMX G2A k2j (r19)
+static const int NUM_DMX = 4;
+Pin pinG2Afnc(23, OUTPUT, LOW, HIGH);  // DMX G2A fcn (r17) // NOTE: Moved from damaged Teensy pin
+Pin pinG2Ak2j(22, OUTPUT, LOW, HIGH);  // DMX G2A k2j (r19) // NOTE: Moved from damaged Teensy pin
+Pin pinG2Akbd(40, OUTPUT, LOW, HIGH);  // DMX G2A kbd (r21)
 Pin pinG2Alks(15, OUTPUT, LOW, HIGH);  // DMX G2A lks (r13)
-// Note: there's also a `pinG2Alks` controlling the bulbs, but we don't scan that here
+// Note: we don't scan the LKS DMX on pin 16 here; it's for controlling the bulbs
+Pin pinG2APins[NUM_DMX] = { pinG2Afnc, pinG2Akbd, pinG2Ak2j, pinG2Alks };
+static const int G2A_LKS_INDEX = 3; // Note: pinG2Alks must be last in this array because it is scanned differently
 
-const int DMX_MAX = 8;
-Pin pinSelA(53, OUTPUT, HIGH, LOW);  // DMX Select A (r23)
-Pin pinSelB(52, OUTPUT, HIGH, LOW);  // DMX Select B (r25)
-Pin pinSelC(51, OUTPUT, HIGH, LOW);  // DMX Select C (r27)
+static const int DMX_SEL_MAX = 8;
+Pin pinSelA = Pin(51, OUTPUT, HIGH, LOW);  // DMX Select A (r23)
+Pin pinSelB = Pin(52, OUTPUT, HIGH, LOW);  // DMX Select B (r25)
+Pin pinSelC = Pin(53, OUTPUT, HIGH, LOW);  // DMX Select C (r27)
 
-const int NUM_RETURN = 8;
-Pin pinRet1(33, LOW);  // Return 1 (r1)
-Pin pinRet2(34, LOW);  // Return 2 (r3)
-Pin pinRet3(35, LOW);  // Return 3 (r5)
-Pin pinRet4(36, LOW);  // Return 4 (r7)
-Pin pinRet5(37, LOW);  // Return 5 (r9)
-Pin pinRet6(38, LOW);  // Return 6 (r11)
-Pin pinRet7(39, LOW);  // Return 7 (r13)
-Pin pinRet8(27, LOW);  // Return 8 (r15)
+static const int NUM_RETURN_LINES = 8;
+Pin pinRet1 = Pin(27, LOW);  // Return 1 (r1)
+Pin pinRet2 = Pin(39, LOW);  // Return 2 (r3)
+Pin pinRet3 = Pin(38, LOW);  // Return 3 (r5)
+Pin pinRet4 = Pin(37, LOW);  // Return 4 (r7)
+Pin pinRet5 = Pin(36, LOW);  // Return 5 (r9)
+Pin pinRet6 = Pin(35, LOW);  // Return 6 (r11)
+Pin pinRet7 = Pin(34, LOW);  // Return 7 (r13)
+Pin pinRet8 = Pin(33, LOW);  // Return 8 (r15)
+Pin pinRetPins[NUM_RETURN_LINES] = { pinRet1, pinRet2, pinRet3, pinRet4, pinRet5, pinRet6, pinRet7, pinRet8 };
 
-Pin pinG2APins[NUM_G2A] = { pinG2Afnc, pinG2Ak2j, pinG2Akbd, pinG2Alks };
-Pin pinRetPins[NUM_RETURN] = { pinRet1, pinRet2, pinRet3, pinRet4, pinRet5, pinRet6, pinRet7, pinRet8 };
-
-void scanReturnLine(int g, int sA, int sB, int sC) {
-  Key& key;
+void scanReturnLine(int g2a, int selA, int selB, int selC) {
   // Scan each return line
-  for (int r = 0; r < NUM_RETURN; r++) {
-    key = keymap.get(g, sA, sB, sC, r);
+  for (int r = 0; r < NUM_RETURN_LINES; r++) {
+    Key& key = keymap.get(g2a, selA, selB, selC, r);
     key.setPressed(pinRetPins[r].isActive());
     if (key.changed()) {
+//      Serial.printf("g2a:abc->r = %i:%i%i%i->%i was %s\n", g2a, selA, selB, selC, r, key.isPressed()?"pressed":"released");
       if (key.isStandardUsbKey()) {
         // Send key events to USB host instead of simply reporting press/release events
         if (key.isPressed()) {
@@ -84,23 +84,29 @@ void scanReturnLine(int g, int sA, int sB, int sC) {
   }
 }
 
-void scanG2ASelect(Pin pinG2A, int s) {
+void scanG2ASelect(int g2a, int sel) {
   // Decode binary bits
-  bool sA = s & 4;
-  bool sB = s & 2;
-  bool sC = s & 1;
-  pinSelA.setActive(sA);
-  pinSelB.setActive(sB);
-  pinSelC.setActive(sC);
+  bool selA = sel & 4;
+  bool selB = sel & 2;
+  bool selC = sel & 1;
+  pinSelA.setActive(selA);
+  pinSelB.setActive(selB);
+  pinSelC.setActive(selC);
+//  pinLedJog.setActive(selA);
+//  pinLedVar.setActive(selB);
+//  pinLedSht.setActive(selC);
+//  delay(50);
+
   delayMicroseconds(DMX_SETTLE_TIME_MICROS); // Allow time for DMX to settle
-  scanReturnLine(g, sA, sB, sC);
+  scanReturnLine(g2a, selA, selB, selC);
 }
 
-void scanG2A(Pin pinG2A) {
+void scanG2A(int g2a) {
+  Pin pinG2A = pinG2APins[g2a];
   pinG2A.setActive(true);
   // iterate over DMX SEL [a..c] as binary combinations
-  for (int s = 0; s <= DMX_MAX-1; s++) {
-    scanG2ASelect(pinG2A, s);
+  for (int sel = 0; sel <= DMX_SEL_MAX-1; sel++) {
+    scanG2ASelect(g2a, sel);
   }
   pinG2A.setActive(false);
 }
@@ -111,27 +117,24 @@ void scanKeyboard() {
 
   // Iterate over DMX G2A
   // Only one of these should be LOW at any given time
-  for (int g = 0; g < NUM_G2A-1; g++) { // `NUM_G2A-1`: skip last G2A because it uses a reduced address space
-    pinG2A = pinG2APins[g];
-    scanG2A(pinG2A);
+  for (int g2a = 0; g2a < NUM_DMX-1; g2a++) { // `NUM_DMX-1`: skip pinG2Alks because it uses a reduced address space
+    scanG2A(g2a);
   }
-  // Scan last G2A using a reduced address space
-  pinG2A = pinG2APins[NUM_G2A];
-  pinG2A.setActive(true);
-  scanG2ASelect(pinG2A, 0b001); // LKS 1-8
-  scanG2ASelect(pinG2A, 0b010); // LKS 9-16
-  scanG2ASelect(pinG2A, 0b000); // LKS 17-18, still wastes 6/8 iterations but eh.
-  pinG2A.setActive(false);
+//   // Scan pinG2Alks using a reduced address space
+//   pinG2Alks.setActive(true);
+//   scanG2ASelect(G2A_LKS_INDEX, 0b001); // LKS 1-8
+//   scanG2ASelect(G2A_LKS_INDEX, 0b010); // LKS 9-16
+//   scanG2ASelect(G2A_LKS_INDEX, 0b000); // LKS 17-18, still wastes 6/8 iterations but eh.
+//   pinG2Alks.setActive(false);
 
   pinLedJog.setActive(false); // Debug: Turn this LED aff after each scan
 }
 
-int setupKeyboard() {
+void setupKeyboard() {
   Serial.print("keyboard:");
   keymap = Keymap();
   //threads.addThread(scanKeyboard); // FIXME Why does this seem to randomly just stop?
   Serial.println("ok");
-  return 0;
 }
 
 #endif
