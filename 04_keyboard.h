@@ -54,19 +54,30 @@ void scanReturnLine(int g, int sA, int sB, int sC) {
         // Send key events to USB host instead of simply reporting press/release events
         if (key.isPressed()) {
           Keyboard.press(key.getUsbKeyCode());
-          Serial.printf("%i was pressed\n", key.getUsbKeyCode());
+          Serial.printf("USB keycode %i was pressed\n", key.getUsbKeyCode());
         } else { // released
           Keyboard.release(key.getUsbKeyCode());
-          Serial.printf("%i was released\n", key.getUsbKeyCode());
+          Serial.printf("USB keycode %i was released\n", key.getUsbKeyCode());
         }
       } else { // nonstandard key
         // Report press/release events for nonstandard keys
         Serial.printf("%s was %s\n", key.getLabel(), key.isPressed() ? "pressed" : "released");
         if (key.isPressed()) {
-          Keyboard.printf("%s", key.getLabel());
+//          Keyboard.printf("%s", key.getLabel());
           // FIXME (if possible??) "ABSLT" prints "AXONY" because console sends in DK layout
+          switch(key.getUsbKeyCode()) {
+            case 99989: // Send Windows-E
+              Serial.printf("Special key: %s\n", key.getLabel());
+              Keyboard.set_modifier(MODIFIERKEY_GUI);
+              Keyboard.press(KEY_D); // 'D' on the Teensy (using QwertyDK) becomes 'E' on my laptop )using DvorakNO)
+              Keyboard.release(KEY_D); // FIXME Avoid being affected by keyboard mapping
+              Keyboard.release(MODIFIERKEY_GUI);
+              break;
+            default:
+              Serial.printf("(Unmapped special key: %s)\n", key.getLabel());
+          }
         } else { // released
-          // No output when releasing nonstandard key
+          // No output when sustaining or releasing nonstandard key
         }
       }
     }
@@ -95,9 +106,10 @@ void scanG2A(Pin pinG2A) {
 }
 
 void scanKeyboard() {
-  pinLedJog.setActive(true); // Debug: Keep this LED on while scanning
-  // iterate over DMX G2A
-  Pin pinG2A;
+  // Debug: Keep an LED on while scanning, to identify when the loop stops running
+  pinLedJog.setActive(true);
+
+  // Iterate over DMX G2A
   // Only one of these should be LOW at any given time
   for (int g = 0; g < NUM_G2A-1; g++) { // `NUM_G2A-1`: skip last G2A because it uses a reduced address space
     pinG2A = pinG2APins[g];
@@ -111,7 +123,7 @@ void scanKeyboard() {
   scanG2ASelect(pinG2A, 0b000); // LKS 17-18, still wastes 6/8 iterations but eh.
   pinG2A.setActive(false);
 
-  pinLedJog.setActive(false); // Debug: Turn this LED aff after scanning
+  pinLedJog.setActive(false); // Debug: Turn this LED aff after each scan
 }
 
 int setupKeyboard() {
