@@ -61,18 +61,21 @@ const Key KEY_UNDEFINED = Key();
 
 class Keymap {
 private:
-const int NUM_G2A = 4; // TODO Make these external
-const int NUM_DMX_STATES = 2; // It's binary
-const int NUM_RETURN = 8;
+
+  static const int NUM_G2A = 4; // TODO Make these external
+  static const int NUM_DMX_STATES = 2; // It's binary
+  static const int NUM_RETURN_LINES = 8;
+
   Key keymap
     [NUM_G2A]  // g2a for fn, k1, k2j, lks
     [2]  // selA
     [2]  // selB
     [2]  // selC
-    [NUM_RETURN]  // return line
+    [NUM_RETURN_LINES]  // return line
     ;
 
 public:
+
   Key& get(int g2a, bool selA, bool selB, bool selC, int rx) {
     //    Serial.printf("keymap[%i][%i][%i][%i][%i]\n", g2a, selA, selB, selC, rx);
     return keymap[g2a][selA][selB][selC][rx];
@@ -85,7 +88,7 @@ public:
       for (int selA = 0; selA < NUM_DMX_STATES; selA++) {
         for (int selB = 0; selB < NUM_DMX_STATES; selB++) {
           for (int selC = 0; selC < NUM_DMX_STATES; selC++) {
-            for (int rl = 0; rl < NUM_RETURN; rl++) {
+            for (int rl = 0; rl < NUM_RETURN_LINES; rl++) {
               keymap[g2a][selA][selB][selC][rl] = KEY_UNDEFINED;
             }
           }
