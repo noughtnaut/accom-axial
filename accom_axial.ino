@@ -5,16 +5,16 @@
 
 #include "02_heartbeat.h"
 #include "04_keyboard.h"
-#include "06_display.h"
+// #include "06_display.h"
 
 void startSerial() {
   Serial.begin(0);  // Will always be USB speed
 //  while (!Serial) // TODO Don't *require* serial for production use
-    ;  // wait for serial port to connect
+  ; // wait for serial port to connect
 }
 
 void loop() {
- scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to randomly just stop?
+  scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to randomly just stop?
 }
 
 void setup() {
@@ -26,7 +26,7 @@ void setup() {
 //   setupStorage();
 //   setupConfig();
   setupKeyboard();
-  setupDisplay();
+//   setupDisplay();
 
   Serial.println("initialised ok");
 }
