@@ -245,7 +245,7 @@ public:
     keymap[2][0][1][1][5] = Key(99921, String("[SET/TRIM IN]"));   // SET/TRIM IN
     keymap[2][0][1][1][6] = Key(99920, String("[SET/TRIM RATE]")); // SET/TRIM RATE
     keymap[2][0][1][1][7] = Key(99919, String("[SLIDE]"));         // SLIDE
-    keymap[2][1][0][0][0] = Key(MODIFIERKEY_RIGHT_ALT);     // MARK IN JOG
+    keymap[2][1][0][0][0] = Key(99907, String("[MARK IN]"));     // MARK IN JOG
     keymap[2][1][0][0][1] = Key(KEY_END);                   // END
     keymap[2][1][0][0][2] = Key(99918, String("[SELECT]"));        // SELECT
     keymap[2][1][0][0][3] = Key(KEY_PAGE_DOWN);             // NEXT PAGE
@@ -254,7 +254,6 @@ public:
     keymap[2][1][0][0][6] = Key(99915, String("[VFD 5 COMMIT]"));  // VFD 5 COMMIT
     keymap[2][1][0][0][7] = Key(99914, String("[STOP]"));          // STOP
     keymap[2][1][0][1][0] = Key(99913, String("[GPI]"));           // GPI
-    // Note: The console key for "-/COPY" should report a "-", but in my own keyboard layout that becomes a "+"
     keymap[2][1][0][1][1] = Key(KEY_MINUS);                 // - / COPY
     keymap[2][1][0][1][2] = Key(KEY_P);                     // P
     keymap[2][1][0][1][3] = Key(KEY_SEMICOLON);             // ;
@@ -267,7 +266,7 @@ public:
     keymap[2][1][1][0][2] = Key(KEY_RIGHT_BRACE);           // ]
     keymap[2][1][1][0][3] = Key(99909, String("[AUX 1-9]"));       // AUX 1-9
     keymap[2][1][1][0][4] = Key(99908, String("[TRIM CLIP]"));     // TRIM CLIP
-    keymap[2][1][1][0][5] = Key(99907, String("[MARK IN]"));       // MARK IN
+    keymap[2][1][1][0][5] = Key(MODIFIERKEY_RIGHT_ALT);       // MARK IN
     keymap[2][1][1][0][6] = Key(99906, String("[BLACK]"));         // BLACK
     keymap[2][1][1][0][7] = Key(KEY_SLASH);                 // ROLL /
     keymap[2][1][1][1][0] = Key(99905, String("[DEV XCHNG]"));     // DEV XCHNG
