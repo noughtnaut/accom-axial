@@ -16,6 +16,9 @@ void teensyHeartbeat() {
 //    Serial.println(colour ? "♥" : "♡");
     threads.delay(DELAY_MILLIS);
     colour = !colour;
+    pinLed.setActive(colour);
+    threads.delay(DELAY_MILLIS/8);
+    colour = !colour;
     threads.yield();
   }
 }
