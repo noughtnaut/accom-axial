@@ -9,6 +9,8 @@
 static const int DMX_SETTLE_TIME_MICROS = 40;
 Keymap keymap;
 
+Pin pinKbdInhibit(17, INPUT_PULLUP, LOW, false); // Grounding this pin prevents keystrokes to be sent over USB
+
 // The layout next to the jog wheel is:
 //  [jog]  [var]    [shutl]
 // [play] [abslt] [swr fader]
@@ -49,7 +51,10 @@ void scanReturnLine(int g2a, int selA, int selB, int selC) {
     Key& key = keymap.get(g2a, selA, selB, selC, r);
     key.setPressed(pinRetPins[r].isActive());
     if (key.changed()) {
-//      Serial.printf("g2a:abc->r = %i:%i%i%i->%i was %s\n", g2a, selA, selB, selC, r, key.isPressed()?"pressed":"released");
+      if (pinKbdInhibit.isActive()) {
+        Serial.printf("Suppressed keystroke: g2a:abc->r = %i:%i%i%i->%i was %s\n", g2a, selA, selB, selC, r, key.isPressed()?"pressed":"released");
+        return;
+      }
       if (key.isStandardUsbKey()) {
         // Send key events to USB host instead of simply reporting press/release events
         if (key.isPressed()) {
@@ -134,6 +139,9 @@ void setupKeyboard() {
   Serial.print("keyboard:");
   keymap = Keymap();
   //threads.addThread(scanKeyboard); // FIXME Why does this seem to randomly just stop?
+  if (pinKbdInhibit.isActive()) {
+    Serial.print("(suppressed)");
+  }
   Serial.println("ok");
 }
 
