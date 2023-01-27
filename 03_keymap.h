@@ -76,13 +76,16 @@ private:
 
 public:
 
+  Keymap() {
+    setupKeymap();
+  }
+
   Key& get(int g2a, bool selA, bool selB, bool selC, int rx) {
     //    Serial.printf("keymap[%i][%i][%i][%i][%i]\n", g2a, selA, selB, selC, rx);
     return keymap[g2a][selA][selB][selC][rx];
   }
 
-  Keymap() {
-    Serial.print("keymap:");
+  void setupKeymap() {
     // Define all keys as "undefined"
     for (int g2a = 0; g2a < NUM_G2A; g2a++) {
       for (int selA = 0; selA < NUM_DMX_STATES; selA++) {
@@ -290,13 +293,12 @@ public:
     keymap[3][1][0][0][1] = Key(99895, String("[f5b3]"));
     keymap[3][1][0][0][2] = Key(99894, String("[f5c3]"));
     keymap[3][1][0][0][3] = Key(99893, String("[f5d3]"));
-    keymap[3][1][0][0][4] = Key(99892, String("[VID Menu 1]"));    // VID Menu 1
-    keymap[3][1][0][0][5] = Key(99891, String("[VID Menu 2]"));    // VID Menu 2
-    keymap[3][1][0][0][6] = Key(99890, String("[VID Menu 3]"));    // VID Menu 3
-    keymap[3][1][0][0][7] = Key(99889, String("[VID Menu 4]"));    // VID Menu 4
-    keymap[3][0][0][0][0] = Key(99888, String("[VID Menu 5]"));    // VID Menu 5
-    keymap[3][0][0][0][1] = Key(99887, String("[VID Menu 6]"));    // VID Menu 6
-    Serial.print("ok ");
+    keymap[3][1][0][0][4] = Key(99892, String("VFD Menu 1]"));    //VFD Menu 1
+    keymap[3][1][0][0][5] = Key(99891, String("VFD Menu 2]"));    //VFD Menu 2
+    keymap[3][1][0][0][6] = Key(99890, String("VFD Menu 3]"));    //VFD Menu 3
+    keymap[3][1][0][0][7] = Key(99889, String("VFD Menu 4]"));    //VFD Menu 4
+    keymap[3][0][0][0][0] = Key(99888, String("VFD Menu 5]"));    //VFD Menu 5
+    keymap[3][0][0][0][1] = Key(99887, String("VFD Menu 6]"));    //VFD Menu 6
   }
 };
 
