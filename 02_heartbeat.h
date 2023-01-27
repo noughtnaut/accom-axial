@@ -9,14 +9,13 @@
 void teensyHeartbeat() {
   bool colour = true;
   const int DELAY_MILLIS = 1250;
-  Pin pinLed(LED_BUILTIN, OUTPUT, HIGH, HIGH);  // Heartbeat LED
+  Pin pinLed(LED_BUILTIN, OUTPUT, HIGH, true);  // Heartbeat LED
 
   while (true) {
-    pinLed.setActive(colour);
+    pinLed.setActive(true);
 //    Serial.println(colour ? "♥" : "♡");
     threads.delay(DELAY_MILLIS);
-    colour = !colour;
-    pinLed.setActive(colour);
+    pinLed.setActive(false);
     threads.delay(DELAY_MILLIS/8);
     colour = !colour;
     threads.yield();
@@ -25,7 +24,9 @@ void teensyHeartbeat() {
 
 // Blink the Teensy on-board LED
 void setupTeensyHeartbeat() {
+  Serial.print("heartbeat:");
   threads.addThread(teensyHeartbeat);
+  Serial.println("ok");
 }
 
 #endif
