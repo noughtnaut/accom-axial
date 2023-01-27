@@ -12,35 +12,35 @@ Keymap keymap;
 // The layout next to the jog wheel is:
 //  [jog]  [var]    [shutl]
 // [play] [abslt] [swr fader]
-Pin pinLedJog(28, OUTPUT, LOW, HIGH);  // JOG LED (r4)
-Pin pinLedVar(29, OUTPUT, LOW, HIGH);  // VAR LED (r2)
-Pin pinLedSht(32, OUTPUT, LOW, HIGH);  // SHUTL LED (r33)
-Pin pinLedAbs(31, OUTPUT, LOW, HIGH);  // ABSLT LED (r31)
-Pin pinLedSwr(30, OUTPUT, LOW, HIGH);  // SWR-FADER LED (r29)
+Pin pinLedJog(28, OUTPUT, LOW, false);  // JOG LED (r4)
+Pin pinLedVar(29, OUTPUT, LOW, false);  // VAR LED (r2)
+Pin pinLedSht(32, OUTPUT, LOW, false);  // SHUTL LED (r33)
+Pin pinLedAbs(31, OUTPUT, LOW, false);  // ABSLT LED (r31)
+Pin pinLedSwr(30, OUTPUT, LOW, false);  // SWR-FADER LED (r29)
 
 static const int NUM_DMX = 4;
-Pin pinG2Afnc(23, OUTPUT, LOW, HIGH);  // DMX G2A fcn (r17) // NOTE: Moved from damaged Teensy pin
-Pin pinG2Ak2j(22, OUTPUT, LOW, HIGH);  // DMX G2A k2j (r19) // NOTE: Moved from damaged Teensy pin
-Pin pinG2Akbd(40, OUTPUT, LOW, HIGH);  // DMX G2A kbd (r21)
-Pin pinG2Alks(15, OUTPUT, LOW, HIGH);  // DMX G2A lks (r13)
+Pin pinG2Afnc(23, OUTPUT, LOW, false);  // DMX G2A fcn (r17) // NOTE: Moved from damaged Teensy pin
+Pin pinG2Ak2j(22, OUTPUT, LOW, false);  // DMX G2A k2j (r19) // NOTE: Moved from damaged Teensy pin
+Pin pinG2Akbd(40, OUTPUT, LOW, false);  // DMX G2A kbd (r21)
+Pin pinG2Alks(15, OUTPUT, LOW, false);  // DMX G2A lks (r13)
 // Note: we don't scan the LKS DMX on pin 16 here; it's for controlling the bulbs
 Pin pinG2APins[NUM_DMX] = { pinG2Afnc, pinG2Akbd, pinG2Ak2j, pinG2Alks };
 static const int G2A_LKS_INDEX = 3; // Note: pinG2Alks must be last in this array because it is scanned differently
 
 static const int DMX_SEL_MAX = 8;
-Pin pinSelA = Pin(51, OUTPUT, HIGH, LOW);  // DMX Select A (r23)
-Pin pinSelB = Pin(52, OUTPUT, HIGH, LOW);  // DMX Select B (r25)
-Pin pinSelC = Pin(53, OUTPUT, HIGH, LOW);  // DMX Select C (r27)
+Pin pinSelA = Pin(51, OUTPUT, HIGH, false);  // DMX Select A (r23)
+Pin pinSelB = Pin(52, OUTPUT, HIGH, false);  // DMX Select B (r25)
+Pin pinSelC = Pin(53, OUTPUT, HIGH, false);  // DMX Select C (r27)
 
 static const int NUM_RETURN_LINES = 8;
-Pin pinRet1 = Pin(27, LOW);  // Return 1 (r1)
-Pin pinRet2 = Pin(39, LOW);  // Return 2 (r3)
-Pin pinRet3 = Pin(38, LOW);  // Return 3 (r5)
-Pin pinRet4 = Pin(37, LOW);  // Return 4 (r7)
-Pin pinRet5 = Pin(36, LOW);  // Return 5 (r9)
-Pin pinRet6 = Pin(35, LOW);  // Return 6 (r11)
-Pin pinRet7 = Pin(34, LOW);  // Return 7 (r13)
-Pin pinRet8 = Pin(33, LOW);  // Return 8 (r15)
+Pin pinRet1 = Pin(27, INPUT_PULLUP, LOW, false);  // Return 1 (r1)
+Pin pinRet2 = Pin(39, INPUT_PULLUP, LOW, false);  // Return 2 (r3)
+Pin pinRet3 = Pin(38, INPUT_PULLUP, LOW, false);  // Return 3 (r5)
+Pin pinRet4 = Pin(37, INPUT_PULLUP, LOW, false);  // Return 4 (r7)
+Pin pinRet5 = Pin(36, INPUT_PULLUP, LOW, false);  // Return 5 (r9)
+Pin pinRet6 = Pin(35, INPUT_PULLUP, LOW, false);  // Return 6 (r11)
+Pin pinRet7 = Pin(34, INPUT_PULLUP, LOW, false);  // Return 7 (r13)
+Pin pinRet8 = Pin(33, INPUT_PULLUP, LOW, false);  // Return 8 (r15)
 Pin pinRetPins[NUM_RETURN_LINES] = { pinRet1, pinRet2, pinRet3, pinRet4, pinRet5, pinRet6, pinRet7, pinRet8 };
 
 void scanReturnLine(int g2a, int selA, int selB, int selC) {
