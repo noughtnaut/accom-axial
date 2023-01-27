@@ -1,5 +1,9 @@
 #include <Arduino.h>
 
+/**
+ * This code is a prototype. It is neither super pretty nor compliant with C++ best practices.
+**/
+
 #ifndef ACCOM_AXIAL
 #define ACCOM_AXIAL
 
@@ -14,7 +18,7 @@ void startSerial() {
 }
 
 void loop() {
-  scanKeyboard(); // TODO: Move loop to keyboard module, but there it seems to randomly just stop?
+   scanKeyboard(); // TODO: Move loop to thread in keyboard module (as for the heartbeat), but there it seems to randomly just stop?
 }
 
 void setup() {
