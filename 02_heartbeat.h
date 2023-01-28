@@ -23,10 +23,10 @@ void teensyHeartbeat() {
 }
 
 // Blink the Teensy on-board LED
-void setupTeensyHeartbeat() {
-  Serial.print("heartbeat:");
+void setupTeensyHeartbeat(Logger logger) {
+  logger.begin("heartbeat");
   threads.addThread(teensyHeartbeat);
-  Serial.println("ok");
+  logger.end("ok");
 }
 
 #endif

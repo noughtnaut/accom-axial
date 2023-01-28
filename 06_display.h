@@ -6,6 +6,7 @@
 
 #include "05_vfd.h"
 
+Logger logger;
 Vfd vfd;
 
 int setupDisplay() {
