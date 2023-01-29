@@ -4,44 +4,88 @@
 #include <Arduino.h>
 #include <string.h>
 
+#include "01_logger.h"
 #include "05_vfd.h"
 
-Logger logger;
 Vfd vfd;
+bool isSetup = false;
 
-int setupDisplay() {
-  Serial.print("display:");
+void setupDisplay() {
+//  logger.begin("display");
+//  Pin pinLed = Pin::getLed(); // For debugging, to indicate various operations
   vfd = Vfd(2, 40, 6);
-  vfd.cursorHide(); // Prettiest this way
 
   // Should print:
-  // <.................................Hello,
-  // World!.................................>
+  // Hello,.................................>
+  // <.................................World!
+  vfd.cursorInvertedBlock();
+  vfd.cursorShow();
+  delay(500);
+//  vfd.cursorShow();
   vfd.fill('.');
-  vfd.setTextAt(1, 0, "World!");
-  vfd.setTextAt(0, 34, "Hello,");
-  vfd.setTextAt(0, 0, "<");
-  vfd.setTextAt(1, 39, ">");
-  delay(2000);
+  vfd.fill('*');
+  vfd.fill('#');
+  vfd.fill(0xef);
+  vfd.fill(0x7f);
+  vfd.fill(0x87);
+  vfd.fill('.');
+  vfd.fill('.');
+  vfd.fill('*');
+  vfd.fill('#');
+  vfd.fill(0xef);
+  vfd.fill(0x7f);
+  vfd.fill(0x87);
+  vfd.fill('.');
+  vfd.fill('.');
+  vfd.fill('*');
+  vfd.fill('#');
+  vfd.fill(0xef);
+  vfd.fill(0x7f);
+  vfd.fill(0x87);
+  vfd.fill('.');
+  vfd.fill('.');
+  vfd.fill('*');
+  vfd.fill('#');
+  vfd.fill(0xef);
+  vfd.fill(0x7f);
+  vfd.fill(0x87);
+  vfd.fill('.');
+
+  logger.logln("vfd demo done"); /*
+  delay(1000);
+  vfd.setTextAt(2, 35, "World!");
+  delay(1000);
+  vfd.setTextAt(2, 1, "<");
+  delay(1000);
+  vfd.setTextAt(1, 1, "Hello,");
+  delay(1000);
+  vfd.setTextAt(1, 40, ">");
+  vfd.cursorHide();
 
   // Should print:
   // Slot1v Slot2v Slot3v Slot4v Slot5v Slot6
   // Slot1k Slot2k Slot3k Slot4k Slot5k Slot6
   // Note: rightmost slot only gets 5 chars (deal with it)
+  delay(3000);
   vfd.clear();
-  char buffer[10] = {0}; // Must be big enough
-  for (int row=vfd.getHeight()-1; row>=0; row--) {
+  vfd.setSlotText(1, 3, "<-1234->");
+  vfd.setSlotText(1, 2, "Header");
+  vfd.setSlotText(2, 2, "Value");
+  char buffer[20] = {0}; // Must be big enough
+  for (int row=vfd.getNumRows()-1; row>=0; row--) {
     for (int slot=vfd.getNumSlots()-1; slot>=0; slot--) {
-//      Serial.printf("Row %i Slot %i: ", row, slot);
+      sprintf(buffer, "Row %i, Slot %i: ", row, slot);
+      logger.logln(buffer);
       sprintf(buffer, "Slot%i%s", 1+slot, row?"k":"v");
-      vfd.setSlotText(row, slot, String(buffer));
+      logger.logln(buffer);
+      vfd.setSlotText(row, slot, "<-1234->");//String(buffer));
     }
   }
-  delay(1000);
+  delay(3000);
   vfd.setSlotText(0, 3, "<-overflow->");
   vfd.setSlotText(1, 2, "<--spoils neighbours-->");
-  delay(1000);
-  vfd.fadeOut(800);
+  delay(3000);
+  vfd.fadeOut(1000);
 
   // Shiny!
   vfd.clear();
@@ -58,16 +102,16 @@ int setupDisplay() {
   delay(500);
   vfd.fadeOut(800);
 
-  // Blink the VFD thrice so we can see we're done
-  // (even without a serial monitor)
+  // Blink the VFD thrice so we can see we're done even without a serial monitor
+  logger.log("(blink)\n");
   for (int i=0; i < 3; i++) {
     delay(300);
     vfd.off();
     delay(300);
     vfd.on();
   }
-
-  Serial.println("ok");
-  return 0;
+*/
+//  logger.end();
 }
+
 #endif

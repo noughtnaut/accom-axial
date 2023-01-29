@@ -5,6 +5,7 @@
 // Other includes must be listed in the main INO file
 #include <vector>
 
+#include "01_logger.h"
 #include "01_pin.h"
 
 // see: https://stackoverflow.com/a/18067292/14577190
@@ -16,141 +17,157 @@
 **/
 class Vfd {
 
-///////////////////////////////////////////////////
-//                                               //
-//  TO DO: Rework to parallel instead of serial  //
-//                                               //
-///////////////////////////////////////////////////
-
 private:
 
-  static const int VFD_BAUD_DELAY_MICROS = 105; // 1.000.000 / 9.600
+  int currentCursorPosition = 1; // 1-based; a 2x40 display has 80 positions
+  Pin pinLed = Pin::getLed(); // For debugging, to indicate various operations
+
+  // Use Teensy UART, see: https://www.pjrc.com/teensy/td_uart.html
+  static const int VFD_BAUD = 9600; // Match hardware setting on VFD daughter board
+  static const int PIN_SERIAL = 1; // For Teensy 3.5, this is one of (1, 5, 26)
+  static const int PIN_BUSY = 25; // The Teensy pin connected to the VFD daughter board's BUSY signal
+
   static const int VFD_CMD_RESET = 0xFF; // clears display and memory, sets power on condition
-  static const int VFD_HT = 0x09; // HT "cursor position shifts one character to the right (no wrap)"
+  static const int VFD_BS = 0x08; // BS "cursor position shifts one character to the left (unless at edge)"
+  static const int VFD_HT = 0x09; // HT "cursor position shifts one character to the right (unless at edge)"
   static const int VFD_LF = 0x0a; // LF "all characters cleared, position remains"
   static const int VFD_CLEAR = 0x0c; // clears display and memory, sets power on condition
   static const int VFD_CR = 0x0d; // CR "cursor position shifts to the left end"
-  static const int VFD_WRAP = 0x11; // DC1 "cursor turns on"
-  static const int VFD_SCROLL = 0x12; // DC2 "cursor turns on"
+  static const int VFD_WRAP = 0x11; // DC1 "cursor shifts right after printing (wrap at edge)"
+  static const int VFD_SCROLL = 0x12; // DC2 "cursor shifts right after printing (marquee when at edge)"
   static const int VFD_CURSOR_SHOW = 0x13; // DC3 "cursor turns on"
   static const int VFD_CURSOR_HIDE = 0x14; // DC4 "cursor turns off"
   static const int VFD_CURSOR_BLINK = 0x15; // DC5 "cursor turns on and blinks"
   static const int VFD_CURSOR_LINE = 0x16; // CM1 ??? TODO check if this is true, datasheet says "no action"
-  static const int VFD_CURSOR_BLOCK = 0x17; // CM2 "lit
-  static const int VFD_CURSOR_INVERT = 0x18; // CM3 "lit in reverse" ??? TODO verify this means "inverted"
+  static const int VFD_CURSOR_BLOCK = 0x17; // CM2 "cursor position lit"
+  static const int VFD_CURSOR_INVERT = 0x18; // CM3 "cursor position lit in reverse" TODO verify this means "inverted"
+  // SB registers a user character. Seems to require parallel (mentions use of "D0..D4" and saying "D5..D7 are invalid")
   static const int VFD_ESC = 0x1b; // ESC "the cursor position may be defined by one byte after the ESC data"
 
-  Pin pinBusy = Pin(25, HIGH); // BUSY (r31), red wire
-  // FIXME The WR signal does not seem to work as described. Why is the display flickering when this pin is enabled?
-  // Pin pinWR = Pin(26, OUTPUT, HIGH, LOW);  // WR (r29), red wire
-  Pin pinA0 = Pin(12, OUTPUT, LOW, HIGH); // A0 (r30), yellow wire
-  Pin pinBL = Pin(14, OUTPUT, LOW, HIGH); // BL (r32), pull down to blank, yellow wire
-  Pin pinDS = Pin(24, OUTPUT, HIGH, LOW); // RxS (r33) Serial data, white wire
-  // pinCS is always LOW (hardwired to GND on the back of the VFD board)
+  Pin pinBusy = Pin(PIN_BUSY, INPUT, HIGH, false); // BUSY (r31)
+  Pin pinA0 = Pin(12, OUTPUT, LOW, false); // A0 (r30)
+  Pin pinBL = Pin(14, OUTPUT, LOW, false); // BL (r32)
+  // pinCS is always LOW (hardwired to GND on the back of the VFD board; only needed when multiplexing several VFD's)
 
-  int numCharsPerRow = 40;
-  int numRows = 2;
+  int numCharsPerRow = 0;
+  int numRows = 0;
   int numSlots = 0;
   int numCharsPerSlot = numCharsPerRow;
+  int numCharsTotal = 0;
+  std::vector<char> buffer;
   std::vector<int> slotCentre;
-  std::vector<String> displayCache;
 
-  void sendSerialByte(int byte) {
-//    Serial.print("sendSerialByte:");
-    // Ensure VFD is ready to receive data
-    if (pinBusy.isActive()) {
-      Serial.print("Waiting for VFD to become ready ... ");
-      while (pinBusy.isActive())
-        ;  // wait for VFD to become ready
-       Serial.println("ok");
+  void updateCursorPosition(int byte) {
+//    logger.begin("updateCursorPosition(byte)");
+    // Update cursor position unless we're sending non-printing characters
+    if (byte>=0x20) { // We're sending printing characters
+      currentCursorPosition++;
+    } else { // Low-numbered characters can do all sorts of funky stuff
+      switch (byte) {
+        case VFD_BS:
+          currentCursorPosition--;
+          break;
+        case VFD_HT:
+          currentCursorPosition++;
+          break;
+        case VFD_LF:
+          currentCursorPosition += numCharsPerRow;
+          break;
+        case VFD_CLEAR:
+          currentCursorPosition = 1;
+          break;
+        case VFD_CR: { // This bracket limits the scope of `currentRow` so that it does not leak into the `default` scope
+        // For a 2x20 display: 1->1, 21-> 21, 17->1, 37->21
+          int currentRow = 1 + currentCursorPosition/numCharsPerRow;
+          currentCursorPosition = 1 + currentRow*numCharsPerRow;
+        }
+        default:
+          // Do not update position
+          break;
+      }
     }
-
-    // Send one "0" start bit
-    pinDS.setActive(false);
-    delayMicroseconds(VFD_BAUD_DELAY_MICROS);
-
-    // Send one bit at a time (LSB to MSB)
-    int mask = 0b00000001u;
-    for (int b = 0; b < 8; b++) {
-      pinDS.setActive(byte & mask);
-      delayMicroseconds(VFD_BAUD_DELAY_MICROS);
-      mask <<= 1;
-    }
-
-    // Send two "1" stop bits
-    pinDS.setActive(true);
-    delayMicroseconds(2 * VFD_BAUD_DELAY_MICROS);
-    pinDS.setActive(false);
-//    Serial.println("ok");
-  }
-
-  void sendCommand(int byte) {
-    // Begin transmission
-//    pinWR.setActive(true); // FIXME Disabled until I figure out what's up with pinWR
-
-    // Send command
-    pinA0.setActive(true);
-    sendSerialByte(byte);
-
-    // End transmission
-//    pinWR.setActive(false); // FIXME Disabled until I figure out what's up with pinWR
+    // Normalise position within display
+    while (currentCursorPosition<1) currentCursorPosition += numCharsTotal;
+    while (currentCursorPosition>numCharsTotal) currentCursorPosition -= numCharsTotal;
+//    logger.end();
   }
 
   void sendData(int byte) {
-    pinA0.setActive(false);
-    // Do not send "Begin transmission"
-    sendSerialByte(0); // FIXME Why does the first character get eaten?
-    sendSerialByte(byte);
-    // Do not send "End transmission"
+//    logger.begin("sendData(byte)");
+//    pinLed.on();
+    if (pinBusy.isActive()) {
+      // Serial.print("Waiting for VFD to become ready ... ");
+      while (pinBusy.isActive())
+        ;  // wait for VFD to become ready
+      // Serial.println("ok");
+    }
+    Serial1.write(byte);
+    updateCursorPosition(byte); // Update cursor position unless we're sending non-printing characters
+//    sprintf(buffer, "Current pos: %i", currentCursorPosition);
+//    logger.logln(buffer);
+//    pinLed.off();
+//    logger.end();
   }
 
   void sendData(String text) {
-    int len = text.length();
-    const char *c = text.c_str();
-    pinA0.setActive(false);
-    sendSerialByte(0); // FIXME Why does the first character get eaten?
-    for (int i=0; i<len; i++) {
-      sendSerialByte(c[i]);
+//    logger.begin("sendByte(string)");
+//    pinLed.on();
+    if (pinBusy.isActive()) {
+      // Serial.print("Waiting for VFD to become ready ... ");
+      while (pinBusy.isActive())
+        ;  // wait for VFD to become ready
+      // Serial.println("ok");
     }
+    Serial1.print(text.c_str());
+    currentCursorPosition += text.length(); // TODO This assumes no non-printing characters
+//    sprintf(buffer, "Current pos: %i", currentCursorPosition);
+//    logger.logln(buffer);
+//    pinLed.off();
+//    logger.end();
   }
 
-  void updateDisplay() {
-//    Serial.print("updateDisplay:");
-    // Clear display
-    sendData(VFD_CLEAR);
-    // Fill display from cache
-    for (int row=0; row<numRows; row++) {
-      for (int col=0; col<numCharsPerRow; col++) {
-        sendData(displayCache.at(row).charAt(col));
-      }
-    }
-//    Serial.println("ok");
+  void sendCommand(int byte) {
+//    logger.begin("sendCommand(byte,bool)");
+    pinA0.on();
+    sendData(byte);
+    pinA0.off();
+//    logger.end();
   }
 
 public:
 
   Vfd() {
-    Vfd(1, 20);
-  }
-
-  Vfd(int newNumRows, int newNumCharsPerRow) {
-    Vfd(newNumRows, newNumCharsPerRow, 0);
+    Vfd(1, 1, 0);
   }
 
   Vfd(int newNumRows, int newNumCharsPerRow, int newNumSlots) {
-    Serial.print("vfd:");
+    logger.begin("vfd");
+    pinLed.on();
+  // Setup Teensy UART, see: https://www.pjrc.com/teensy/td_uart.html
+    Serial1.setTX(PIN_SERIAL);
+//    Serial1.attachCts(PIN_BUSY);
+    Serial1.begin(VFD_BAUD, SERIAL_8N1);
+//    sprintf(buffer, "Serial1.availableForWrite()=%i", Serial1.availableForWrite());
+//    logger.logln(buffer);
+//---------
     numRows = newNumRows;
     numCharsPerRow = newNumCharsPerRow;
-    if (newNumSlots) {
-      numSlots = newNumSlots;
+    numCharsTotal = (numRows*numCharsPerRow);
+    buffer.resize(numCharsTotal);
+    numSlots = newNumSlots;
+    if (numSlots) {
       numCharsPerSlot = ROUNDED_INT_DIV(numCharsPerRow, numSlots);
       for (int slot=0; slot<numSlots; slot++) {
         int centre = slot*numCharsPerSlot + numCharsPerSlot/2;
         slotCentre.push_back(centre);
       }
+    } else {
+      numCharsPerSlot = numCharsPerRow;
+      slotCentre.push_back(numCharsPerRow/2);
     }
     reset();
-    Serial.println("ok");
+    pinLed.off();
+    logger.end();
   }
 
   int getNumRows() {
@@ -165,16 +182,19 @@ public:
     return numSlots;
   }
 
-  bool isBusy() {
-    return pinBusy.isActive();
+  int getNumCharsPerSlot() {
+    return numCharsPerSlot;
   }
 
   void on() {
-    pinBL.setActive(false);
+    pinBL.off();
+//    logger.logln("on");
   }
 
   void off() {
-    pinBL.setActive(true);
+    pinBL.on();
+    delay(5);
+//    logger.logln("off");
   }
 
   void cursorShow() {
@@ -201,31 +221,28 @@ public:
     sendData(VFD_CURSOR_INVERT);
   }
 
-  void brightness(int level) {
-    switch(level) {
-    case 0: // Turn display off
-      off();
-      break;
-    default: // Full brightness
-    case 1: // DIM1 = 100%
-      sendData(1);
-      on();
-      break;
-    case 2: // DIM2 =  75%
-    case 3: // DIM3 =  50%
-    case 4: // DIM4 =  25%
-      sendData(5-level);
-      on();
-    }
-  }
-
   /**
-   * Assumes starting at full brightness
+   * Brightness control
+   * 4=most bright (100%)
+   * 1=least bright (25%)
+   * 0=off
   **/
-  void fadeOut(int duration) {
-    for (int level=4; level >= 0; level--) {
-      brightness(level);
-      delay(duration/4);
+  void brightness(int level) {
+//    logger.log("brightness: ");
+    switch(level) {
+      default: // Full brightness
+        sendData(1);
+        on();
+        break;
+      case 4: // DIM1 = 100%
+      case 3: // DIM2 =  75%
+      case 2: // DIM3 =  50%
+      case 1: // DIM4 =  25%
+        sendData(5-level);
+        on();
+        break;
+      case 0: // Turn display off
+        off();
     }
   }
 
@@ -233,111 +250,137 @@ public:
    * Assumes starting at zero brightness
   **/
   void fadeIn(int duration) {
-    for (int level=1; level <= 4; level++) {
+//    logger.begin("fadeIn");
+    brightness(1);
+    for (int level=2; level <= 4; level++) {
       delay(duration/4);
       brightness(level);
     }
+//    logger.end();
   }
 
-/*
-  void cursorPosition(int row, int col) {
-    if(row >= 0 && row < getNumRows()
-    && col >= 0 && col < getNumCharsPerRow()
-    ) {
-      Serial.print(".");
-      // TODO Optimise to use direct position instead of relative
-      // Command write byte -> "set the cursor position"
-      int target = col;
-      for (int i=0; i < row; i++)
-        target += getNumCharsPerRow();
-      switch (3) { // FIXME Various approaches
-        case 0: // Reposition relative to current position
-          sendData(VFD_CR); // FIXME Only works first time???
-          for (int i=0; i < target; i++)
-            sendData(VFD_HT);
-          break;
-        case 1: // Use command to reposition
-          sendCommand(0); // Set position 0
-          // FIXME Works, but also clears all characters
-          for (int i=0; i < target; i++)
-            sendData(VFD_HT);
-          break;
-        case 2: // Use data to reposition
-          sendData(VFD_ESC); // The next byte after this sets the position
-          sendData(target); // FIXME No effect...
-          break;
-        case 3:
-          // TODO Implement a software buffer and reset the entire display at every change
-          break;
-      }
+  /**
+   * Assumes starting at full brightness
+  **/
+  void fadeOut(int duration) {
+//    logger.begin("fadeOut");
+    for (int level=3; level >= 1; level--) {
+      brightness(level);
+      delay(duration/4);
     }
+    off();
+//    logger.end();
   }
-*/
+
+  void moveBy(int adjustment) {
+//    logger.begin("moveBy");
+    // Normalise position within display
+    while (adjustment<0) adjustment += numCharsTotal;
+    while (adjustment>numCharsTotal) adjustment -= numCharsTotal;
+    if (!adjustment) {
+//      logger.logln("Normalising obviates adjustment");
+//      logger.end();
+      return;
+    }
+//    sprintf(buffer, "Need to adjust by %i positions", adjustment);
+//    logger.logln(buffer);
+
+    // Move shortest direction (possibly wrapping)
+    bool goForward = true;
+    if (adjustment>numCharsTotal/2) {
+//      logger.log("easier going the other way, ");
+      adjustment = numCharsTotal-adjustment;
+      goForward = false;
+//      sprintf(buffer, "adjust by %i positions backward", adjustment);
+//      logger.appendln(buffer);
+    }
+
+    // Move the cursor by the required adjustment: use HT to go right, or BS to go left)
+    int charToSend = goForward ? VFD_HT : VFD_BS;
+    for (int m = 0; m<adjustment; m++) { // TODO Take wrapping mode into account
+      sendData(charToSend);
+    }
+//    logger.end();
+  }
+
+  void moveTo(int row, int col) {
+//    logger.begin("moveTo");
+    pinLed.on();
+    if(row >= 1 && row <= getNumRows()
+    && col >= 1 && col <= getNumCharsPerRow()
+    ) {
+      // TODO Optimise to use direct position instead of relative
+      // TODO Optimise to use VFD_CR to jump by quarter rows
+      int desiredPos = (col + (row-1)*numCharsPerRow) % numCharsTotal;
+//      sprintf(buffer, "Current pos: %i", currentCursorPosition);
+//      logger.logln(buffer);
+//      sprintf(buffer, "Desired pos: %i", desiredPos);
+//      logger.logln(buffer);
+      int adjustment = desiredPos-currentCursorPosition;
+//      sprintf(buffer, "Need to move %i positions ", adjustment);
+//      logger.logln(buffer);
+      if (adjustment) {
+        moveBy(adjustment);
+      }
+    } else {
+//      logger.logln("Invalid position");
+    }
+    pinLed.off();
+//    logger.end();
+  }
 
   void reset() {
-//    sendCommand(VFD_CMD_RESET); // FIXME Disabled until I figure out what's up with pinWR
+    logger.begin("reset");
+//    sendCommand(VFD_CMD_RESET);
 
-    off(); // Just to avoid any flicker while resetting
-    sendRawByte(VFD_CLEAR);
-    sendRawByte(VFD_WRAP);
+//    off(); // Just to avoid any flicker while resetting
+    sendData(VFD_WRAP);
+    clear();
 
-//    cursorHide(); // For production
-    cursorLine(); // For debug
-    cursorBlink(); // For debug
-    sendData("Hello"); // For debug
+    cursorHide(); // For production
+//    cursorLine(); // For debug
+//    cursorBlock(); // For debug
+//    cursorBlink(); // For debug
 
-    sendRawByte(VFD_CR); // Move cursor to left edge
-    brightness(1); // Full brightness
-
-    // TODO Optimise this
-    for (int row=0; row<numRows; row++) {
-      String text = String(' ');
-      while (text.length()<(unsigned int)numCharsPerRow) {
-        text.concat(text);
-      }
-      text = text.substring(0, numCharsPerRow);
-      displayCache.push_back(text);
-    }
+    brightness(100); // Just to demo that "level>3" will default to "full brightness"
+    logger.end();
   }
 
   void fill(char filler) {
-    char buffer[numCharsPerRow];
-    memset(buffer, filler, numCharsPerRow);
-    off();
-    setTextAt(0, 0, buffer);
-    setTextAt(1, 0, buffer);
-    brightness(100); // Just to demo that "level>3" will default to "full brightness"
+//    logger.begin("fill");
+    std::fill_n(buffer.begin(), buffer.size(), filler);
+    sendData(buffer.data());
+//    logger.end();
   }
 
   void clear() {
-    fill(' ');
+    sendData(VFD_CLEAR);
+    currentCursorPosition = 1;
   }
 
+  /**
+   * Caution! Using this to send visible characters is going to mess up positioning!
+  **/
   void sendRawByte(int byte) {
     sendData(byte);
   }
 
   void setTextAt(int row, int col, String text) {
-//    Serial.printf("setTextAt row %i col %i: '%s' ", row, col, text.c_str());
-    for (int i=0; i<(int)text.length(); i++) {
-      displayCache.at(row).setCharAt(col+i, text.charAt(i));
-    }
-    // TODO See if any of these are faster:
-    // a) copy substring() at destination, then use replace()
-    // b) concatenate prefix + new string + suffix
-    // c) should we in fact be using the CS pin to send commands???
-    updateDisplay();
-//    displayCache.setCharAt();
-//    cursorPosition(row, col);
-//    sendData(text);
-//    Serial.println("ok");
+//    logger.begin("setTextAt");
+//    sprintf(buffer, "pos: %i, %i", row, col);
+//    logger.logln(buffer);
+//    logger.log("text: ");
+//    logger.appendln(text.c_str());
+    moveTo(row, col);
+    sendData(text);
+//    logger.end();
   }
 
   void setTextCentredAt(int row, int centre, String text) {
-//    Serial.printf("VFD text centred at row %i col %i: '%s' ", row, centre, text.c_str());
+//    logger.begin("setTextCentredAt");
     int col = centre - text.length()/2;
     setTextAt(row, col, text);
-//    Serial.println("ok");
+//    logger.end();
   }
 
   /**
@@ -345,12 +388,12 @@ public:
    * Note: Does not clip overlong strings (will overflow adjacent slots)
   **/
   void setSlotText(int row, int slot, String text) {
-//    Serial.printf("VFD row %i slot %i: '%s' ", row, slot, text.c_str());
+//    logger.begin("setSlotText");
     int col = slotCentre.at(slot);
     setTextCentredAt(row, col, text);
     // Alternatively, with boundary clipping:
     // setTextCentredAt(row, col, text.substring(0, numCharsPerSlot));
-//    Serial.println("ok");
+//    logger.end();
   }
 };
 

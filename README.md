@@ -49,3 +49,8 @@ The manufacturer, Accom, [folded](https://www.tvtechnology.com/news/accom-dims-t
 The control panel itself is fairly hefty: The thing weighs around 7.7kg, is 78cm wide, 16cm tall, and 32cm deep.
 
 In total, there are 189 buttons, 23 of which are individually lightable, arranged into a full qwerty layout, a combined numeric/navigation block, five clusters of 12 keys each, other minor clusters, and a 2x40 character VFD display with a blue-on-black colour scheme surrounded by six sets of lighted switches, dial knobs, and keys. There's also a large trackball (although with no mouse buttons nearby), and a solid-metal jog wheel.
+
+
+## Misc. notes
+
+* [Custom "waterslide" decals for keycaps](https://old.reddit.com/r/MechanicalKeyboards/comments/nncx59/how_to_diy_custom_print_keycaps_using_waterslide/)

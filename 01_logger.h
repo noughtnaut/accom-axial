@@ -1,47 +1,45 @@
-#ifndef UTIL_LOGGER
-#define UTIL_LOGGER
+#ifndef LOGGER
+#define LOGGER
 
 #include <Arduino.h>
 #include <vector>
 #include <string.h>
 
+#include "01_pin.h"
+
 class Logger {
+
+Pin pinLed = Pin::getLed(); // For debugging, to indicate various operations
 
 private:
 
   int indent = 0;
-  std::vector<String> section;
+  bool isEnabled = false;
 
-  void startSerial(bool waitForSerial) {
+  void startSerial() {
+    pinLed.on();
     Serial.begin(0);  // Will always be USB speed
-    if (waitForSerial && !Serial)
-      while (!Serial)
-        ; // wait for serial port to connect
+    pinLed.blink(50,50);
   }
 
-  void headerPush(const char *header) {
-    section.push_back(String(header));
-  }
-
-  String headerPop() {
-    String& item = section.at(indent);
-    String header = String(item); // Copy because pop_back is going to destroy the original
-    section.pop_back();
-    return header;
-  }
-
-  void logAtIndent(const char *msg, int _indent) {
+  void logAtIndent(const char* msg, int _indent) {
+    if (!isEnabled) return;
     for (int i=0; i<_indent; i++) Serial.print("  ");
     Serial.print(msg);
   }
 
 public:
 
-  static const bool WAIT_UNTIL_READY = true;
-  static const bool IMMEDIATE = false;
+  Logger() {
+    startSerial();
+  }
 
-  Logger(bool waitForSerial) {
-    startSerial(waitForSerial);
+  void enable() {
+    isEnabled = true;
+  }
+
+  void diable() {
+    isEnabled = false;
   }
 
   void log() {
@@ -50,38 +48,46 @@ public:
 
   void logln(char msg) {
     char arr[1] = {msg};
-    log(arr);
-    log("\n");
+    logln(arr);
   }
 
-  void logln(const char *msg) {
+  void logln(const char* msg) {
     log(msg);
-    log("\n");
+    log();
   }
 
-  void log(const char *msg) {
+  void log(String msg) {
+    log(msg.c_str());
+  }
+
+  void log(const char* msg) {
     logAtIndent(msg, indent);
   }
 
-  void append(const char *msg) {
+  void appendln(const char* msg) {
+    append(msg);
+    log();
+  }
+
+  void append(const char* msg) {
     logAtIndent(msg, 0);
   }
 
-  void begin(const char *msg) {
-    log(msg);
-    append(":");
-    log();
-    headerPush(msg);
+  void begin(const char* msg) {
+    logln(msg);
     indent++;
   }
 
-  void end(const char *msg) {
+  void end() {
+    end("ok");
+  }
+
+  void end(const char* msg) {
     indent--;
-    String header = headerPop();
-    log(header.c_str());
-    logAtIndent(" ok", 0);
-    log();
+    logln(msg);
   }
 };
+
+Logger logger = Logger();
 
 #endif

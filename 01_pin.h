@@ -49,6 +49,19 @@ public:
     //Serial.printf("setState(%i,%i) -> %s\n", number , newState, newState?"HIGH":"LOW");
   }
 
+  void on() {
+    setState(actState==LOW ? LOW : HIGH);
+  }
+
+  void off() {
+    setState(actState==LOW ? HIGH : LOW);
+  }
+
+  void blink(int onDuration, int offDuration) {
+    on(); delay(onDuration);
+    off(); delay(offDuration);
+  }
+
   void setActive(bool activate) {
     //Serial.printf("setActive(%i,%s) -> ", number , activate?"true":"false");
     setState(activate == (HIGH==actState)); // XNOR
@@ -66,6 +79,10 @@ public:
 
   int getNumber() {
     return number;
+  }
+
+  static Pin getLed() {
+    return Pin(LED_BUILTIN, OUTPUT, HIGH, true);
   }
 };
 
