@@ -8,51 +8,44 @@
 #include "05_vfd.h"
 
 Vfd vfd;
-bool isSetup = false;
 
-void setupDisplay() {
-//  logger.begin("display");
-//  Pin pinLed = Pin::getLed(); // For debugging, to indicate various operations
-  vfd = Vfd(2, 40, 6);
-
+void doDemoStuff() {
+  logger.begin("vfd demo");
   // Should print:
   // Hello,.................................>
   // <.................................World!
   vfd.cursorInvertedBlock();
   vfd.cursorShow();
   delay(500);
-//  vfd.cursorShow();
-  vfd.fill('.');
-  vfd.fill('*');
-  vfd.fill('#');
-  vfd.fill(0xef);
-  vfd.fill(0x7f);
-  vfd.fill(0x87);
-  vfd.fill('.');
-  vfd.fill('.');
-  vfd.fill('*');
-  vfd.fill('#');
-  vfd.fill(0xef);
-  vfd.fill(0x7f);
-  vfd.fill(0x87);
-  vfd.fill('.');
-  vfd.fill('.');
-  vfd.fill('*');
-  vfd.fill('#');
-  vfd.fill(0xef);
-  vfd.fill(0x7f);
-  vfd.fill(0x87);
-  vfd.fill('.');
-  vfd.fill('.');
-  vfd.fill('*');
-  vfd.fill('#');
-  vfd.fill(0xef);
-  vfd.fill(0x7f);
-  vfd.fill(0x87);
-  vfd.fill('.');
+//  vfd.fill('.');
+//  vfd.fill('*');
+//  vfd.fill('#');
+//  vfd.fill(0xef);
+//  vfd.fill(0x7f);
+//  vfd.fill(0x87);
+//  vfd.fill('.');
+//  vfd.fill('.');
+//  vfd.fill('*');
+//  vfd.fill('#');
+//  vfd.fill(0xef);
+//  vfd.fill(0x7f);
+//  vfd.fill(0x87);
+//  vfd.fill('.');
+//  vfd.fill('.');
+//  vfd.fill('*');
+//  vfd.fill('#');
+//  vfd.fill(0xef);
+//  vfd.fill(0x7f);
+//  vfd.fill(0x87);
+//  vfd.fill('.');
+//  vfd.fill('.');
+//  vfd.fill('*');
+//  vfd.fill('#');
+//  vfd.fill(0xef);
+//  vfd.fill(0x7f);
+//  vfd.fill(0x87);
+//  vfd.fill('.');
 
-  logger.logln("vfd demo done"); /*
-  delay(1000);
   vfd.setTextAt(2, 35, "World!");
   delay(1000);
   vfd.setTextAt(2, 1, "<");
@@ -62,6 +55,7 @@ void setupDisplay() {
   vfd.setTextAt(1, 40, ">");
   vfd.cursorHide();
 
+/*
   // Should print:
   // Slot1v Slot2v Slot3v Slot4v Slot5v Slot6
   // Slot1k Slot2k Slot3k Slot4k Slot5k Slot6
@@ -111,6 +105,14 @@ void setupDisplay() {
     vfd.on();
   }
 */
+  logger.end("vfd demo done");
+}
+
+void setupDisplay() {
+//  logger.begin("display");
+//  Pin pinLed = Pin::getLed(); // For debugging, to indicate various operations
+  vfd = Vfd(2, 40, 6);
+  doDemoStuff();
 //  logger.end();
 }
 

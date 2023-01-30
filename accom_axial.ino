@@ -34,7 +34,7 @@ void setup() {
   pinLed.blink(0,500);
   pinLed.blink(50,50);
   pinLed.blink(50,50);
-  pinLed.blink(50,50);
+  pinLed.blink(500,0);
 }
 
 #endif

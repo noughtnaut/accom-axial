@@ -38,7 +38,7 @@ public:
     isEnabled = true;
   }
 
-  void diable() {
+  void disable() {
     isEnabled = false;
   }
 
