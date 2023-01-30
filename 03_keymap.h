@@ -60,19 +60,6 @@ public:
 const Key KEY_UNDEFINED = Key();
 
 class Keymap {
-private:
-
-  static const int NUM_G2A = 4; // TODO Make these external
-  static const int NUM_DMX_STATES = 2; // It's binary
-  static const int NUM_RETURN_LINES = 8;
-
-  Key keymap
-    [NUM_G2A]  // g2a for fn, k1, k2j, lks
-    [2]  // selA
-    [2]  // selB
-    [2]  // selC
-    [NUM_RETURN_LINES]  // return line
-    ;
 
 public:
 
@@ -87,7 +74,7 @@ public:
 
   void setupKeymap() {
     // Define all keys as "undefined"
-    for (int g2a = 0; g2a < NUM_G2A; g2a++) {
+    for (int g2a = 0; g2a < NUM_DMX; g2a++) {
       for (int selA = 0; selA < NUM_DMX_STATES; selA++) {
         for (int selB = 0; selB < NUM_DMX_STATES; selB++) {
           for (int selC = 0; selC < NUM_DMX_STATES; selC++) {
@@ -300,6 +287,20 @@ public:
     keymap[3][0][0][0][0] = Key(99888, String("VFD Menu 5]"));    //VFD Menu 5
     keymap[3][0][0][0][1] = Key(99887, String("VFD Menu 6]"));    //VFD Menu 6
   }
+
+  static const int NUM_DMX = 4;
+  static const int NUM_DMX_STATES = 2; // It's binary
+  static const int NUM_RETURN_LINES = 8;
+
+private:
+
+  Key keymap
+    [NUM_DMX]  // g2a for fn, k1, k2j, lks
+    [2]  // selA
+    [2]  // selB
+    [2]  // selC
+    [NUM_RETURN_LINES]  // return line
+    ;
 };
 
 #endif
