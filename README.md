@@ -31,7 +31,7 @@ If you don't have a console, I'd advise you to hit the 2nd-hand websites, and wi
 
 ### Where can I get more help, if I need it?
 
-This project is thoroughly documented on its [Hackaday Project page](https://hackaday.io/project/187258-repurposing-an-accom-axial-control-panel).
+- This project is thoroughly documented on its [Hackaday Project page](https://hackaday.io/project/187258-repurposing-an-accom-axial-control-panel).
 
 
 ## Origin
