@@ -38,7 +38,7 @@ void Axial::init_display() {
 			{30, 6},
 			{37, 7}};
 	d.init(2, 40, NUM_SLOTS, slotDims);
-	showoff();
+//	showoff();
 }
 
 void Axial::showoff() {
