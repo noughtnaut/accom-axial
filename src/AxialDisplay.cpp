@@ -257,16 +257,15 @@ void AxialDisplay::setTextCentredAt(char row, char centre, const String &text) {
 	char halfLen = (textLen + 1) / 2; // +1 causes odd-length strings to  round up (half-assed right-alignment)
 	char col = centre - halfLen + 1;
 	char lastOkPos = numCharsPerRow - textLen+1;
-	col = Util::ensureWithinRange(col, 1, lastOkPos);
+	col = constrain(col, 1, lastOkPos);
 	setTextAt(row, col, text);
 }
 
 /**
  * Note: Does not truncate overlong strings (will overflow adjacent slots).
- * Note: `slot` is 0-based.
 **/
 void AxialDisplay::setSlotText(char row, char slot, const String &text) {
-	DisplaySlot &displaySlot = slots.at(Util::ensureWithinRange(slot, 0, getNumSlots() - 1));
+	DisplaySlot &displaySlot = slots.at(constrain(slot, 1, getNumSlots()) - 1);
 	char centre = displaySlot.getPos();
 
 	// Expand text to erase existing slot text

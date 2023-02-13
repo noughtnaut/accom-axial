@@ -65,23 +65,23 @@ void Axial::showoff() {
 
 	delay(1000);
 	// Showing off setting slot text
-	d.setSlotText(1, 0, "Slot 1");	d.setSlotText(2, 0, "Val. 1");
-	d.setSlotText(1, 1, "Slot 2");	d.setSlotText(2, 1, "Val. 2");
-	d.setSlotText(1, 2, "Slot 3");	d.setSlotText(2, 2, "Val. 3");
-	d.setSlotText(1, 3, "Slot 4");	d.setSlotText(2, 3, "Val. 4");
-	d.setSlotText(1, 4, "Slot 5");	d.setSlotText(2, 4, "Val. 5");
-	d.setSlotText(1, 5, "Slot 6");	d.setSlotText(2, 5, "Val. 6");
+	d.setSlotText(1, 1, "Slot 1");	d.setSlotText(2, 1, "Val. 1");
+	d.setSlotText(1, 2, "Slot 2");	d.setSlotText(2, 2, "Val. 2");
+	d.setSlotText(1, 3, "Slot 3");	d.setSlotText(2, 3, "Val. 3");
+	d.setSlotText(1, 4, "Slot 4");	d.setSlotText(2, 4, "Val. 4");
+	d.setSlotText(1, 5, "Slot 5");	d.setSlotText(2, 5, "Val. 5");
+	d.setSlotText(1, 6, "Slot 6");	d.setSlotText(2, 6, "Val. 6");
 
 	delay(1000);
 	// Showing off update speed for adjustment of slot value
 	char buffer[20] = {0};
-	for (int slot = 0; slot < d.getNumSlots(); ++slot) {
-		sprintf(buffer, "Slot %i", slot + 1);
+	for (int slot = 1; slot <= d.getNumSlots(); ++slot) {
+		sprintf(buffer, "Slot %i", slot);
 		d.setSlotText(1, slot, String(buffer));
 		d.setSlotText(2, slot, "0%");
 	}
 	delay(500);
-	for (int slot = 0; slot < d.getNumSlots(); ++slot) {
+	for (int slot = 1; slot <= d.getNumSlots(); ++slot) {
 		for (int percentage = 1; percentage < 101; ++percentage) {
 			sprintf(buffer, "%i%%", percentage);
 			d.setSlotText(2, slot, String(buffer));

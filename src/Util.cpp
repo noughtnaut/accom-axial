@@ -1,18 +1,7 @@
 #include <Arduino.h>
-#include <string>
+#include <vector>
 
 #include "Util.h"
-
-int Util::ensureWithinRange(char n, char min, char max) {
-	// Keep text on same line
-	if (n < min) {
-		return min;
-	}
-	if (n > max) {
-		return max;
-	}
-	return n;
-}
 
 String Util::repeatChar(char filler, char length) {
 	if (length < 1) {

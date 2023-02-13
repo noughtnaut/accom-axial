@@ -121,7 +121,6 @@ public:
 	void setTextCentredAt(char row, char centre, const String &text);
 	/**
 	 * Note: Does not truncate overlong strings (will overflow adjacent slots).
-	 * Note: `slot` is 0-based.
 	**/
 	void setSlotText(char row, char slot, const String &text);
 };

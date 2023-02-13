@@ -1,18 +1,10 @@
 #ifndef TEENSY_AXIAL_UTIL_H
 #define TEENSY_AXIAL_UTIL_H
 
-#include <vector>
+#include <Arduino.h>
 
 class Util {
 public:
-	/**
-	 * Adjusts number to be within a given range.
-	 * @param n
-	 * @param min
-	 * @param max
-	 * @return TRUE if the given number is within [min, max] (inclusive)
-	 */
-	static int ensureWithinRange(char n, char min, char max);
 	/**
 	 * Generates a string of identical characters
 	 * @param filler the character to fill it with
