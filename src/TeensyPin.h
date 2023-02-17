@@ -21,6 +21,7 @@ public:
 	 * @return `TRUE` if the pin is in its active state
 	**/
 	bool isActive() const;
+	TeensyPin()= default;
 	/**
 	 * Connects to an input/output pin.
 	 * @param mode `INPUT` or `OUTPUT`
@@ -35,6 +36,7 @@ public:
 **/
 class InputPin : public TeensyPin {
 public:
+	InputPin()= default;
 	/**
 	 * Connects to an input pin.
 	 * @param number the pin number on the microcontroller board
@@ -48,6 +50,7 @@ public:
 **/
 class OutputPin : public TeensyPin {
 public:
+	OutputPin()= default;
 	/**
 	 * Connects to an output pin.
 	 * @param number the pin number on the microcontroller board
@@ -66,6 +69,11 @@ public:
 	 * Switches the pin to its inactive state.
 	**/
 	void off() const;
+	/**
+	 * Switches the pin to its active state if TRUE is specified.
+	 * @param activate whether to activate the pin
+	**/
+	void setActive(bool activate) const;
 	/**
 	 * Switches the pin's state between active and inactive.
 	**/

@@ -18,7 +18,7 @@ bool TeensyPin::isActive() const {
 	return TeensyPin::getActiveState() == digitalReadFast(_number);
 }
 
-InputPin::InputPin(char number, char activeState) : TeensyPin(INPUT, number, activeState) {
+InputPin::InputPin(char number, char activeState) : TeensyPin(INPUT_PULLUP, number, activeState) {
 }
 
 OutputPin::OutputPin(char number, char activeState) : TeensyPin(OUTPUT, number, activeState) {
@@ -36,8 +36,14 @@ void OutputPin::off() const {
 	digitalWriteFast(getNumber(), getActiveState() == LOW ? HIGH : LOW);
 }
 
+void OutputPin::setActive(bool activate) const {
+	if (activate) on();
+	else off();
+}
+
 void OutputPin::toggle() const {
-	digitalWriteFast(getNumber(), !digitalReadFast(getNumber()));
+	if (isActive()) off();
+	else on();
 }
 
 void OutputPin::blink(unsigned int onDuration, unsigned int offDuration) const {

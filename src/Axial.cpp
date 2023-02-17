@@ -101,3 +101,7 @@ void Axial::showoff() {
 	d.fadeIn(400);
 	Serial.println("Showing off ... ok");
 }
+
+void Axial::scanKeyboard() {
+	k.scanKeyboard();
+}

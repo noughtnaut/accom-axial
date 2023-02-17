@@ -21,6 +21,7 @@ public:
 	**/
 	void init();
 	void showoff();
+	void scanKeyboard();
 };
 
 #endif

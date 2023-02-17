@@ -17,6 +17,7 @@ char AxialDisplay::DisplaySlot::getWidth() const {
 
 void AxialDisplay::init(char newNumRows, char newNumCharsPerRow, char newNumSlots,
 						char slotDims[][2]) {
+//	Serial.println("Starting display ...");
 	currentCursorPosition = 1;
 	numRows = newNumRows;
 	numCharsPerRow = newNumCharsPerRow;
@@ -40,7 +41,7 @@ void AxialDisplay::init(char newNumRows, char newNumCharsPerRow, char newNumSlot
 
 	setTextAt(1, 40, "~");
 
-	Serial.println("Display is ready");
+//	Serial.println("Display is ready");
 }
 
 void AxialDisplay::updateCursorPosition(char byte) {

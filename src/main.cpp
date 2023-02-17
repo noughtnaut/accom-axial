@@ -6,13 +6,15 @@
 
 Axial ax;
 
+OutputPin pinLED{};
+
 /**
  * This runs once when the microcontroller boots up.
 **/
 void setup() {
+	pinLED = OutputPin::getLED();
 //	Stopwatch myTimer;
 //	myTimer.start("Startup");
-	const OutputPin &pinLED = OutputPin::getLED();
 	pinLED.blink(50, 50);
 
 	Serial.begin(0); // Will always be at USB speed
@@ -30,7 +32,7 @@ void setup() {
  * After `setup()` has finished, this runs repeatedly while the microcontroller is powered on.
 **/
 void loop() {
-	OutputPin::getLED().occlude(20,1500);
-//	OutputPin::getLED().off();delay(5);OutputPin::getLED().on();
+	pinLED.blink(1, 10); // Long enough to be visible, short enough to be fast
+
 	ax.scanKeyboard();
 }

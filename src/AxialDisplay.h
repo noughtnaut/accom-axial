@@ -65,6 +65,7 @@ private:
 
 public:
 
+	AxialDisplay()= default;
 	/**
 	 * Initialises the instance (passive constructor).
 	 * @param newNumRows the number of rows of characters
