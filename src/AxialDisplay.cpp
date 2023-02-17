@@ -79,7 +79,7 @@ void AxialDisplay::updateCursorPosition(char byte) {
 void AxialDisplay::sendData(char byte) {
 	if (pinBusy.isActive()) {
 		Serial.print("Waiting for VFD to become ready ... ");
-		while (pinBusy.isActive());  // wait for VFD to become ready
+		while (pinBusy.isActive()); // wait for VFD to become ready
 		Serial.println("ok");
 	}
 	Serial1.write(byte);
@@ -89,7 +89,7 @@ void AxialDisplay::sendData(char byte) {
 void AxialDisplay::sendData(const String &text) {
 	if (pinBusy.isActive()) {
 		Serial.print("Waiting for VFD to become ready ... ");
-		while (pinBusy.isActive());  // wait for VFD to become ready
+		while (pinBusy.isActive()); // wait for VFD to become ready
 		Serial.println("ok");
 	}
 	Serial1.print(text.c_str());

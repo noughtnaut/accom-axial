@@ -54,3 +54,5 @@ In total, there are 189 buttons, 23 of which are individually lightable, arrange
 ## Misc. notes
 
 * [Custom "waterslide" decals for keycaps](https://old.reddit.com/r/MechanicalKeyboards/comments/nncx59/how_to_diy_custom_print_keycaps_using_waterslide/)
+* Use USB Feature Report to [explain the device capabilities to the host](https://eleccelerator.com/tutorial-about-usb-hid-report-descriptors/)
+* Possibly use serial or USB Feature Report for [transmitting data from the host to the keyboard](https://www.tracesystemsinc.com/USB_Tutorials_web/USB/B1_USB_Classes/Books/A3_A_Closer_Look_at_HID_Class/slide10.htm)
