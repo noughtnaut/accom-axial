@@ -21,7 +21,7 @@ public:
 	 * @return `TRUE` if the pin is in its active state
 	**/
 	bool isActive() const;
-	TeensyPin()= default;
+	TeensyPin() = default;
 	/**
 	 * Connects to an input/output pin.
 	 * @param mode `INPUT` or `OUTPUT`
@@ -36,7 +36,7 @@ public:
 **/
 class InputPin : public TeensyPin {
 public:
-	InputPin()= default;
+	InputPin() = default;
 	/**
 	 * Connects to an input pin.
 	 * @param number the pin number on the microcontroller board
@@ -49,14 +49,25 @@ public:
  * Represents an output pin on an Arduino-compatible board.
 **/
 class OutputPin : public TeensyPin {
+private:
+
+	void setState(char state) const;
+
 public:
-	OutputPin()= default;
+	OutputPin() = default;
 	/**
-	 * Connects to an output pin.
+	 * Connects to an output pin. The initial state will be inactive.
 	 * @param number the pin number on the microcontroller board
 	 * @param activeState `LOW` or `HIGH`
 	**/
 	OutputPin(char number, char activeState);
+	/**
+	 * Connects to an output pin, and sets the given initial state.
+	 * @param number the pin number on the microcontroller board
+	 * @param activeState `LOW` or `HIGH`
+	 * @param initialState TRUE sets the state to activeState
+	**/
+	OutputPin(char number, char activeState, bool initiallyActive);
 	/**
 	 * @return the microcontroller board's bulit-in LED
 	**/

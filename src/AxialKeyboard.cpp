@@ -17,11 +17,11 @@ void AxialKeyboard::init() {
 // The layout next to the jog wheel is:
 //  [jog]  [var]    [shutl]
 // [play] [abslt] [swr fader]
-	pinLedJog = OutputPin(28, LOW); // JOG LED (r4)
-	pinLedVar = OutputPin(29, LOW); // VAR LED (r2)
-	pinLedSht = OutputPin(32, LOW); // SHUTL LED (r33)
-	pinLedAbs = OutputPin(31, LOW); // ABSLT LED (r31)
-	pinLedSwr = OutputPin(30, LOW); // SWR-FADER LED (r29)
+	pinLedJog = OutputPin(28, LOW, false); // JOG LED (r4)
+	pinLedVar = OutputPin(29, LOW, false); // VAR LED (r2)
+	pinLedSht = OutputPin(32, LOW, false); // SHUTL LED (r33)
+	pinLedAbs = OutputPin(31, LOW, false); // ABSLT LED (r31)
+	pinLedSwr = OutputPin(30, LOW, false); // SWR-FADER LED (r29)
 
 	pinG2Afnc = OutputPin(23, LOW); // DMX G2A fcn (r17) // NOTE: Moved from damaged Teensy pin
 	pinG2Ak2j = OutputPin(22, LOW); // DMX G2A k2j (r19) // NOTE: Moved from damaged Teensy pin

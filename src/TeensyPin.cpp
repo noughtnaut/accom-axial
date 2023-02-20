@@ -24,16 +24,24 @@ InputPin::InputPin(char number, char activeState) : TeensyPin(INPUT_PULLUP, numb
 OutputPin::OutputPin(char number, char activeState) : TeensyPin(OUTPUT, number, activeState) {
 }
 
+OutputPin::OutputPin(char number, char activeState, bool initiallyActive) : TeensyPin(OUTPUT, number, activeState) {
+	setActive(initiallyActive);
+}
+
 OutputPin OutputPin::getLED() {
 	return OutputPin(LED_BUILTIN, HIGH); // NOLINT(modernize-return-braced-init-list)
 }
 
+void OutputPin::setState(char state) const {
+	digitalWriteFast(getNumber(), state);
+}
+
 void OutputPin::on() const {
-	digitalWriteFast(getNumber(), getActiveState() == LOW ? LOW : HIGH);
+	getActiveState() == LOW ? setState(LOW) : setState(HIGH);
 }
 
 void OutputPin::off() const {
-	digitalWriteFast(getNumber(), getActiveState() == LOW ? HIGH : LOW);
+	getActiveState() == LOW ? setState(HIGH) : setState(LOW);
 }
 
 void OutputPin::setActive(bool activate) const {
