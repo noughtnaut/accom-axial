@@ -23,9 +23,9 @@ void AxialKeyboard::init() {
 	pinLedAbs = OutputPin(31, LOW, false); // ABSLT LED (r31)
 	pinLedSwr = OutputPin(30, LOW, false); // SWR-FADER LED (r29)
 
-	pinG2Afnc = OutputPin(23, LOW); // DMX G2A fcn (r17) // NOTE: Moved from damaged Teensy pin
-	pinG2Ak2j = OutputPin(22, LOW); // DMX G2A k2j (r19) // NOTE: Moved from damaged Teensy pin
-	pinG2Akbd = OutputPin(40, LOW); // DMX G2A kbd (r21)
+	pinG2Afnc = OutputPin(23, LOW); // DMX G2A fcn (r17) // NOTE: Moved from damaged Teensy solder pad "pin"
+	pinG2Ak2j = OutputPin(22, LOW); // DMX G2A k2j (r19) // NOTE: Moved from damaged Teensy solder pad "pin"
+	pinG2Akbd = OutputPin(43, LOW); // DMX G2A kbd (r21) // NOTE: Moved from damaged Teensy solder pad "pin"
 	pinG2Alks = OutputPin(15, LOW); // DMX G2A lks (r13)
 //  Note: ^-- Only one of these should be LOW at any given time
 	pinG2APins.clear();
@@ -37,7 +37,7 @@ void AxialKeyboard::init() {
 
 	pinG2Abulb = OutputPin(16, LOW); // DMX G2A bulbs (r12), this is output not input, so not scanned
 
-	pinSelA = OutputPin(51, HIGH); // DMX Select A (r23)
+	pinSelA = OutputPin(50, HIGH); // DMX Select A (r23) // NOTE: Moved from damaged Teensy solder pad "pin"
 	pinSelB = OutputPin(52, HIGH); // DMX Select B (r25)
 	pinSelC = OutputPin(53, HIGH); // DMX Select C (r27)
 
@@ -87,10 +87,11 @@ void AxialKeyboard::scanReturnLine(int g2a, int selA, int selB, int selC) {
 				// Send key events to USB host instead of simply reporting press/release events
 				if (key.isPressed()) {
 //FIXME					Keyboard.press(key.getUsbKeyCode());
-					Serial.printf("USB keycode %i was pressed\n", key.getUsbKeyCode());
+					Serial.printf("USB key: %s\n", key.getLabel());
+//					Serial.printf("USB keycode %i was pressed\n", key.getUsbKeyCode());
 				} else { // released
 //FIXME					Keyboard.release(key.getUsbKeyCode());
-					Serial.printf("USB keycode %i was released\n", key.getUsbKeyCode());
+//					Serial.printf("USB keycode %i was released\n", key.getUsbKeyCode());
 				}
 			} else { // nonstandard key
 				// Report press/release events for nonstandard keys
@@ -107,7 +108,8 @@ void AxialKeyboard::scanReturnLine(int g2a, int selA, int selB, int selC) {
 //FIXME							Keyboard.release(MODIFIERKEY_GUI);
 							break;
 						default:
-							Serial.printf("(Unmapped special key: %s)\n", key.getLabel());
+							Serial.print("");
+//							Serial.printf("(Unmapped special key: %s)\n", key.getLabel());
 					}
 				} else { // released
 					// No output when sustaining or releasing nonstandard key

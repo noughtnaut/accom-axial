@@ -21,10 +21,10 @@ bool TeensyPin::isActive() const {
 InputPin::InputPin(char number, char activeState) : TeensyPin(INPUT_PULLUP, number, activeState) {
 }
 
-OutputPin::OutputPin(char number, char activeState) : TeensyPin(OUTPUT, number, activeState) {
+OutputPin::OutputPin(char number, char activeState) : TeensyPin(OUTPUT_OPENDRAIN, number, activeState) {
 }
 
-OutputPin::OutputPin(char number, char activeState, bool initiallyActive) : TeensyPin(OUTPUT, number, activeState) {
+OutputPin::OutputPin(char number, char activeState, bool initiallyActive) : TeensyPin(OUTPUT_OPENDRAIN, number, activeState) {
 	setActive(initiallyActive);
 }
 

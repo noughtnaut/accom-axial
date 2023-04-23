@@ -5,6 +5,12 @@ _Turning an obsolete video editor console into a mothership-sized keyboard + tra
 ![Control panel (from original brochure)](./img/brochure image.png)  
 _Control panel (from original brochure)_
 
+## Status
+
+This is the PlatformIO-based version of the code. The framework is nice enough, but it is a problem that the USB keyboard integration seems to be not fully implemented. At its core, the PlatformIO project is configured for a Teensy 3.5, but the Keyboard.h file (provided in ~/.platformio/packages/framework-arduinoteensy/cores/teensy3/) contains a comment literally saying it's an "empty Keyboard.h file". I suppose this is a configuration issue and that there is a way to make the compiler (and IDE) understand to use the stock Arduino header file.
+
+I've [asked the hive mind](https://stackoverflow.com/questions/75489459/platformio-unable-to-resolve-keyboard-hid-pluggableusb-dependency), but so far no guidance.
+
 ## Purpose
 
 ### What does this project do?
