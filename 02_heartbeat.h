@@ -7,18 +7,18 @@
 #include "01_pin.h"
 
 void teensyHeartbeat() {
-  bool blackheart = true;
+  //bool blackheart = true;
   const int DELAY_MILLIS = 1250;
   const int BLINK_RATIO = 12;
   Pin pinLed(LED_BUILTIN, OUTPUT, HIGH, true);
 
   while (true) {
-//    Serial.println(blackheart ? "♥" : "♡");
     pinLed.on();
     threads.delay(DELAY_MILLIS);
+    //Serial.println(blackheart ? "♥" : "♡");
+    //blackheart = !blackheart;
     pinLed.off();
     threads.delay(DELAY_MILLIS/BLINK_RATIO);
-    blackheart = !blackheart;
     threads.yield();
   }
 }

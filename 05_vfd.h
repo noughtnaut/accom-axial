@@ -5,7 +5,6 @@
 // Other includes must be listed in the main INO file
 #include <vector>
 
-#include "01_logger.h"
 #include "01_pin.h"
 
 // see: https://stackoverflow.com/a/18067292/14577190
@@ -133,15 +132,19 @@ private:
     //logger.end();
   }
 
+  void awaitCTS() {
+    if (pinBusy.isActive()) {
+      logger.log("Waiting for VFD to become ready ... ");
+      while (pinBusy.isActive()) // wait for VFD to become ready
+        ; // FIXME We risk hanging here indefitinely, freezing the whole system
+      logger.logln("ok");
+    }
+  }
+
   void sendData(int byte) {
     //logger.begin("sendData(byte)");
     //pinLed.on();
-    if (pinBusy.isActive()) {
-      //logger.log("Waiting for VFD to become ready ... ");
-      while (pinBusy.isActive())
-        ;  // wait for VFD to become ready
-      //logger.logln("ok");
-    }
+    awaitCTS();
     Serial1.write(byte);
     updateCursorPosition(byte); // Update cursor position unless we're sending non-printing characters
     //logger.log("Current pos: "); logger.appendln(currentCursorPosition);
@@ -152,12 +155,7 @@ private:
   void sendData(String text) {
     //logger.begin("sendData(string)");
     //pinLed.on();
-    if (pinBusy.isActive()) {
-      logger.log("Waiting for VFD to become ready ... ");
-      while (pinBusy.isActive())
-        ;  // wait for VFD to become ready
-      logger.logln("ok");
-    }
+    awaitCTS();
     Serial1.print(text.c_str());
     currentCursorPosition += text.length(); // TODO This assumes no non-printing characters
     //logger.log("Current pos: "); logger.appendln(currentCursorPosition);
@@ -177,7 +175,7 @@ private:
     // Setup Teensy UART, see: https://www.pjrc.com/teensy/td_uart.html
     Serial1.setTX(PIN_SERIAL);
     Serial1.begin(VFD_BAUD, SERIAL_8N1);
-    Serial1.attachCts(PIN_BUSY); // Experimental, don't know if we need it since we're also doing it ourselves
+    //Serial1.attachCts(PIN_BUSY); // Experimental, don't know if we need it since we're also doing it ourselves
     //logger.log("Serial1.availableForWrite()="); logger.logln(Serial1.availableForWrite());
   }
 
@@ -230,9 +228,9 @@ public:
   Vfd(int newNumRows, int newNumCharsPerRow, int newNumSlots) {
     logger.begin("init vfd");
     //pinLed.on();
+    reset();
     initSerial();
     initDimensions(newNumRows, newNumCharsPerRow, newNumSlots);
-    reset();
     //pinLed.off();
     logger.end();
   }

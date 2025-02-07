@@ -2,6 +2,8 @@
 #define ACCOM_KEYBOARD
 
 #include <Arduino.h>
+#include <Keyboard.h>
+#include "Keyboard.h"
 
 #include "01_pin.h"
 #include "03_keymap.h"
@@ -194,30 +196,19 @@ void cycleG2A() {
 
 void scanKeyboard() {
   cycleG2A();
+// Alternative implementation:
+// - Run G2A+SEL cycles in a separate thread, but keep their states in global and atomic variables
+// - Set interrupts on the return lines to trigger a decode whenever a signal is received
+// - Might need an additional variable to flag "is settled and ready for scanning".
+// - Test if it is possible to check the cycle setup at that exact moment
 }
 
-void setupKeyboard() {
+void setupKeyboard(Logger logger) {
   logger.begin("init keyboard");
   keymap = Keymap();
   if (pinKbdInhibit.isActive()) {
     logger.logln("suppressing keystrokes");
   }
-  pinG2Afnc.setActive(false);
-  pinG2Ak2j.setActive(false);
-  pinG2Akbd.setActive(false);
-  pinG2Alks.setActive(false);
-  pinG2Ablb.setActive(false); // Not scanned, but needs to be disabled to avoid interference
-  pinSelA.setActive(false);
-  pinSelB.setActive(false);
-  pinSelC.setActive(false);
-  pinLedJog.setActive(false);
-  pinLedVar.setActive(false);
-  pinLedSht.setActive(false);
-  pinLedAbs.setActive(false);
-  pinLedSwr.setActive(false);
-
-  //preload();
-  // threads.addThread(scanKeyboard); // FIXME Why does this seem to randomly just stop?
   logger.end();
 }
 

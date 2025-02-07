@@ -1,6 +1,6 @@
 #include "keylayouts.h"
-#ifndef ACCOM_MAP
-#define ACCOM_MAP
+#ifndef ACCOM_KEYMAP
+#define ACCOM_KEYMAP
 
 #include <Arduino.h>
 
