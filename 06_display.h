@@ -11,30 +11,28 @@ Vfd vfd;
 
 void blockFill() {
   vfd.fill(Vfd::CHAR_BLOCK_FULL);
-	delay(5000);
+  delay(5000);
   vfd.fill(Vfd::CHAR_BLOCK_HATCHED);
-	delay(500);
+  delay(500);
   vfd.clear();
-	delay(500);
 }
 
 void helloWorld() {
-	// Show display boundaries:
-	// Hello,         Accom Axial             >
-	// <             Control Panel       World!
+  // Show display boundaries:
+  // Hello,         Accom Axial             >
+  // <             Control Panel       World!
   vfd.clear();
   vfd.setTextCentredAt(1, 21, "Accom Axial");
   vfd.setTextCentredAt(2, 21, "Control Panel");
-	vfd.setTextAt(2, 35, "World!");
-	vfd.setTextAt(2, 1, "<");
-	vfd.setTextAt(1, 1, "Hello,");
-	vfd.setTextAt(1, 40, ">");
-	//delay(1500);
+  vfd.setTextAt(2, 35, "World!");
+  vfd.setTextAt(2, 1, "<");
+  vfd.setTextAt(1, 1, "Hello,");
+  vfd.setTextAt(1, 40, ">");
+  //delay(1500);
   //vfd.fadeOut(1500);
 }
 
 void propeller() {
-	delay(500);
   for (int i=0; i<4; i++) {
     // propeller
     vfd.fill('\\');
@@ -46,14 +44,7 @@ void propeller() {
 
 void blockBuild() {
   // block builds up from underscore to full block and down again
-	delay(500);
   for (int i=0; i<4; i++) {
-    vfd.fill(Vfd::CHAR_BLOCK_LOWER_1);
-    vfd.fill(Vfd::CHAR_BLOCK_LOWER_2);
-    vfd.fill(Vfd::CHAR_BLOCK_LOWER_3);
-    vfd.fill(Vfd::CHAR_BLOCK_LOWER_4);
-    vfd.fill(Vfd::CHAR_BLOCK_LOWER_5);
-    vfd.fill(Vfd::CHAR_BLOCK_LOWER_6);
     vfd.fill(Vfd::CHAR_BLOCK_FULL);
     vfd.fill(Vfd::CHAR_BLOCK_LOWER_6);
     vfd.fill(Vfd::CHAR_BLOCK_LOWER_5);
@@ -61,10 +52,15 @@ void blockBuild() {
     vfd.fill(Vfd::CHAR_BLOCK_LOWER_3);
     vfd.fill(Vfd::CHAR_BLOCK_LOWER_2);
     vfd.fill(Vfd::CHAR_BLOCK_LOWER_1);
+    vfd.fill(Vfd::CHAR_BLOCK_LOWER_2);
+    vfd.fill(Vfd::CHAR_BLOCK_LOWER_3);
+    vfd.fill(Vfd::CHAR_BLOCK_LOWER_4);
+    vfd.fill(Vfd::CHAR_BLOCK_LOWER_5);
+    vfd.fill(Vfd::CHAR_BLOCK_LOWER_6);
   }
 
   // block builds up from right
-	delay(500);
+  delay(500);
   for (int i=0; i<4; i++) {
     vfd.fill(Vfd::CHAR_BLOCK_FULL);
     vfd.fill(Vfd::CHAR_BLOCK_RIGHT_4);
@@ -79,49 +75,28 @@ void blockBuild() {
 
 void charByCode() {
 // Display specific character by hex code
-//	delay(500);
+//  delay(500);
 //  vfd.fill(0xfd);
-//	delay(500);
+//  delay(500);
 //  vfd.clear();
 }
 
 void slots() {
-  // Should print:
-  // Slot1v Slot2v Slot3v Slot4v Slot5v Slot6
-  // Slot1k Slot2k Slot3k Slot4k Slot5k Slot6
-  // Note: rightmost slot only gets 5 chars (deal with it)
-  delay(3000);
   vfd.clear();
-  vfd.setSlotText(1, 4, "<-1234->");
-  vfd.setSlotText(1, 2, "Header");
-  vfd.setSlotText(2, 2, "Value");
-
   // Show slots
-  delay(1000);
-  vfd.clear();
-  vfd.setSlotText(1, 5, "Slot5k"); // This will wrap around and cause slot 1v to say "klot1v"
-  vfd.setSlotText(2, 0, "Slot1v");
-  delay(500);
-  vfd.setSlotText(1, 4, "Slot4k");
-  vfd.setSlotText(2, 1, "Slot1v");
-  delay(500);
-  vfd.setSlotText(1, 3, "Slot3k");
-  vfd.setSlotText(2, 2, "Slot2v");
-  delay(500);
-  vfd.setSlotText(1, 2, "Slot2k");
-  vfd.setSlotText(2, 3, "Slot3v");
-  delay(500);
-  vfd.setSlotText(1, 1, "Slot1k");
-  vfd.setSlotText(2, 4, "Slot4v");
-  delay(500);
-  vfd.setSlotText(2, 5, "Slot5v"); // This will wrap around and cause slot 0k to say "vlot0k"
-  vfd.setSlotText(1, 0, "Slot0k");
-  delay(2500);
-
-  vfd.setSlotText(1, 3, "<-overflow->");
-  vfd.setSlotText(2, 2, "<--spoils neighbours-->");
-  delay(3000);
-  vfd.fadeOut(1000);
+  // Should print:
+  // <--1->       <--3-->       <--5-->
+  //       <--2-->       <--4-->       <--6->
+  // Rows and slots are 1-based
+  // Might also use Vfd::ROW_TOP and Vfd::ROW_BOTTOM
+  // Note: with 40 chars and 6 slots, outermost slots only get 6 chars
+  vfd.setSlotText(1, 1, "<--1->");
+  vfd.setSlotText(2, 2, "<--2-->");
+  vfd.setSlotText(1, 3, "<--3-->");
+  vfd.setSlotText(2, 4, "<--4-->");
+  vfd.setSlotText(1, 5, "<--5-->");
+  vfd.setSlotText(2, 6, "<--6->");
+  delay(1500);
 }
 
 void bigDamnHeroes() {
@@ -159,32 +134,43 @@ void endlessMarquee() {
   while (true) {
     for (byte c=0x20; c < 0xff; c++) {
       vfd.sendRawByte(c);
-      delay(200);
+      //Debug for experimenting with parallel comms
+      //vfd.sendRawByte(0x66);
+      // 0x48 = "H" = 0001 0010
+      // 0x66 = "f" = 0110 0110
+      delay(100);
     }
   }
-  vfd.clear();
 }
 
 void doVfdDemoStuff() {
-	logger.begin("vfd demo");
-
+  logger.begin("vfd demo");
   //vfd.cursorInvertedBlock(); // does not imply making it visible
-  //vfd.cursorBlink(); // implies making it visible
-  vfd.clear();
+  vfd.cursorLine(); // does not imply making it visible
+  vfd.cursorBlink(); // implies making it visible
+  vfd.cursorShow();
+  //delay(1500);
   //blockFill();
-  propeller();
-  helloWorld();
+  //delay(1500);
+  //propeller();
+  //delay(1500);
+  //helloWorld();
+  //delay(1500);
   //blockBuild();
+  //delay(1500);
   //charByCode();
-  //slots();
+  //delay(1500);
+  slots();
+  //delay(1500);
   //bigDamnHeroes();
-  endlessMarquee(); // Note: will cause demo to not end
-	logger.end("vfd demo done");
+  //delay(1500);
+  //endlessMarquee(); // Note: will cause demo to not end
+  logger.end("vfd demo done");
 }
 
 void setupDisplay() {
   logger.begin("init display");
-	vfd = Vfd(2, 40, 6);
+  vfd = Vfd(2, 40, 6);
   logger.end();
 }
 
