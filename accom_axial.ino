@@ -27,16 +27,16 @@
 #include "06_display.h"
 
 void setup() {
-	Pin::getLed().blink(50,50);
-	logger.enable();
-	logger.logln("--- Accom Axial ---");
-	logger.logln("version: accom_axial");
-	logger.begin("initialise");
+  Pin::getLed().blink(50,50);
+  logger.enable();
+  logger.logln("--- Accom Axial ---");
+  logger.logln("version: accom_axial");
+  logger.begin("initialise");
   //setupTeensyHeartbeat(logger);
-// TODO setupStorage(logger);
-// TODO setupConfig(logger);
-   setupKeyboard();
-   setupDisplay();
+  // TODO setupStorage(logger);
+  // TODO setupConfig(logger);
+  setupKeyboard();
+  setupDisplay();
 
   logger.end("initialised ok");
   Pin::getLed().blink(0,500);
@@ -45,7 +45,7 @@ void setup() {
   Pin::getLed().blink(50,200);
   logger.logln("Do something funny! (Try pressing SYSTM, this should bring up the Start menu on your pc)");
 
-  //doVfdDemoStuff();
+  doVfdDemoStuff();
 }
 
 bool started = false;
@@ -56,7 +56,7 @@ void loop() {
     logger.logln("main loop started");
     started = true;
   }
-	scanKeyboard(); // TODO: Move loop to thread in keyboard module (as for the heartbeat), but there it seems to randomly just stop?
+  scanKeyboard(); // TODO: Move loop to thread in keyboard module (as for the heartbeat), but there it seems to randomly just stop?
 // TODO scan trackball, rotary dials, jog wheel
 /**/
 }

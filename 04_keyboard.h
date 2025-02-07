@@ -120,19 +120,19 @@ void interpretKeyEvent(Key& key) {
 
 void scanReturnLine(int g2a, bool selA, bool selB, bool selC) {
   delayMicroseconds(DMX_SETTLE_TIME_MICROS); // Allow time for DMX to settle
-	// Scan each return line
-	for (int r = 0; r < NUM_RETURN_LINES; r++) {
+  // Scan each return line
+  for (int r = 0; r < NUM_RETURN_LINES; r++) {
     //Serial.printf("g2a:abc->r = %s:%i%i%i->%i\n", g2a==0?"fnc":g2a==1?"kbd":g2a==2?"k2j":g2a==3?"lks":"???", selA, selB, selC, r);
-		Key& key = keymap.get(g2a, selA, selB, selC, r);
-		key.setPressed(pinRetPins[r].isActive());
-		if (key.changed()) {
+    Key& key = keymap.get(g2a, selA, selB, selC, r);
+    key.setPressed(pinRetPins[r].isActive());
+    if (key.changed()) {
       Serial.printf("Keystroke: g2a:abc->r = %s:%i%i%i->%i was %s",
         g2a==0?"fnc":g2a==1?"kbd":g2a==2?"k2j":g2a==3?"lks":"???", selA, selB, selC, r, key.isPressed()?"pressed":"released"
       );
       interpretKeyEvent(key);
       Serial.printf("\n");
-		}
-	}
+    }
+  }
 }
 
 void cycleSelect(int g2a, bool selA, bool selB, bool selC) {
@@ -182,14 +182,14 @@ void cycleSelect(int g2a) {
 }
 
 void cycleG2A() {
-	// Iterate over DMX G2A to enable each DMX, by itself, in order
-//	for (int g2a = 0; g2a < NUM_DMX; g2a++) { // Both keyboard and LKS
-	for (int g2a = 0; g2a < NUM_DMX-1; g2a++) { // Keyboard only, no LKS
+  // Iterate over DMX G2A to enable each DMX, by itself, in order
+//  for (int g2a = 0; g2a < NUM_DMX; g2a++) { // Both keyboard and LKS
+  for (int g2a = 0; g2a < NUM_DMX-1; g2a++) { // Keyboard only, no LKS
 //    logger.logln(g2a==0?"fnc":g2a==1?"kbd":g2a==2?"k2j":g2a==3?"lks":"?????");
-	  pinG2APins[g2a].setActive(true);
+    pinG2APins[g2a].setActive(true);
     cycleSelect(g2a);
-  	pinG2APins[g2a].setActive(false);
-	}
+    pinG2APins[g2a].setActive(false);
+  }
 }
 
 void scanKeyboard() {
@@ -197,19 +197,19 @@ void scanKeyboard() {
 }
 
 void setupKeyboard() {
-	logger.begin("init keyboard");
-	keymap = Keymap();
-	if (pinKbdInhibit.isActive()) {
-		logger.logln("suppressing keystrokes");
-	}
+  logger.begin("init keyboard");
+  keymap = Keymap();
+  if (pinKbdInhibit.isActive()) {
+    logger.logln("suppressing keystrokes");
+  }
   pinG2Afnc.setActive(false);
   pinG2Ak2j.setActive(false);
   pinG2Akbd.setActive(false);
   pinG2Alks.setActive(false);
   pinG2Ablb.setActive(false); // Not scanned, but needs to be disabled to avoid interference
-	pinSelA.setActive(false);
-	pinSelB.setActive(false);
-	pinSelC.setActive(false);
+  pinSelA.setActive(false);
+  pinSelB.setActive(false);
+  pinSelC.setActive(false);
   pinLedJog.setActive(false);
   pinLedVar.setActive(false);
   pinLedSht.setActive(false);
@@ -217,8 +217,8 @@ void setupKeyboard() {
   pinLedSwr.setActive(false);
 
   //preload();
-	// threads.addThread(scanKeyboard); // FIXME Why does this seem to randomly just stop?
-	logger.end();
+  // threads.addThread(scanKeyboard); // FIXME Why does this seem to randomly just stop?
+  logger.end();
 }
 
 #endif
